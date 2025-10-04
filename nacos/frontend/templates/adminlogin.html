@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Login </title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style type="text/tailwindcss">
+    :root {
+      --primary-green: #008000;
+      --light-gray: #f0f2f5;
+      --dark-bg: #121212;
+      --dark-surface: #1e1e1e;
+    }
+    body {
+      font-family: 'Public Sans', sans-serif;
+    }
+    .form-checkbox:checked {
+      background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+      background-color: var(--primary-green);
+      border-color: var(--primary-green);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-light-gray dark:bg-dark-bg text-gray-900 dark:text-white transition-colors duration-500">
+<div class="flex flex-col lg:flex-row min-h-screen">
+<div class="lg:w-1/2 flex flex-col justify-center p-6 sm:p-8 md:p-12 relative">
+<div class="hidden lg:block absolute top-6 right-6">
+<img alt="NACOS Logo" class="h-20 w-20 object-contain" src="https://nacos.org.ng/images/NNL.png"/>
+</div>
+<div class="w-full max-w-md mx-auto">
+<header class="flex items-center mb-8">
+<button class="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h1 class="flex-1 text-center text-2xl font-bold tracking-tight pr-6">Admin Login </h1>
+</header>
+<main class="animate-fade-in-up">
+<div class="text-center mb-10">
+<div class="flex justify-center mb-4">
+<div class="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center lg:bg-transparent dark:lg:bg-transparent">
+<img alt="NACOS Logo" class="h-20 w-20 object-contain lg:hidden" src="https://nacos.org.ng/images/NNL.png"/>
+<span class="material-symbols-outlined text-4xl text-gray-500 dark:text-gray-400 hidden lg:inline">school</span>
+</div>
+</div>
+<h2 class="text-4xl sm:text-5xl font-black text-[var(--primary-green)]">Welcome Back!</h2>
+<p class="text-gray-500 dark:text-gray-400 mt-3 text-base">Nigeria Association of Computing Students</p>
+<p class="text-gray-500 dark:text-gray-400 font-bold">Clifford Chapter</p>
+</div>
+<form class="space-y-6">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--primary-green)] transition-colors duration-300">person</span>
+<input class="w-full h-14 pl-12 pr-4 bg-white dark:bg-dark-surface border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[var(--primary-green)] focus:border-transparent outline-none transition-all duration-300" placeholder="NACOS ID/Matriculation Number" type="text"/>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--primary-green)] transition-colors duration-300">lock</span>
+<input class="w-full h-14 pl-12 pr-12 bg-white dark:bg-dark-surface border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[var(--primary-green)] focus:border-transparent outline-none transition-all duration-300" id="password" placeholder="Password" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" id="togglePassword" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+<div class="flex items-center justify-between">
+<label class="flex items-center space-x-3 cursor-pointer group">
+<input class="form-checkbox h-5 w-5 rounded border-gray-300 dark:border-gray-600 bg-transparent text-[var(--primary-green)] focus:ring-0 focus:ring-offset-0 transition duration-300" type="checkbox"/>
+<span class="text-sm text-gray-600 dark:text-gray-300 group-hover:text-black dark:group-hover:text-white transition-colors">Remember Me</span>
+</label>
+<a class="text-sm font-medium text-[var(--primary-green)] hover:underline" href="#">Forgot Password?</a>
+</div>
+<button class="w-full h-14 bg-[var(--primary-green)] text-white rounded-lg text-lg font-bold tracking-wide shadow-lg shadow-[var(--primary-green)]/30 hover:bg-green-700 hover:shadow-xl hover:shadow-[var(--primary-green)]/40 transform hover:-translate-y-1 active:translate-y-0 transition-all duration-300">
+              Login
+            </button>
+</form>
+<div class="text-center mt-10 space-y-4">
+<p class="text-sm text-gray-500 dark:text-gray-400">
+              Don't have an account?
+              <a class="font-medium text-[var(--primary-green)] hover:underline" href="#">Start fresh registration</a>
+</p>
+<div class="flex items-center justify-center space-x-4">
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-[var(--primary-green)] dark:hover:text-[var(--primary-green)] hover:underline transition-colors" href="/login/">Login as Student</a>
+<span class="text-gray-300 dark:text-gray-600">|</span>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-[var(--primary-green)] dark:hover:text-[var(--primary-green)] hover:underline transition-colors" href="#">Navigate to main site</a>
+</div>
+</div>
+</main>
+</div>
+</div>
+<div class="hidden lg:block lg:w-1/2">
+<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://pbs.twimg.com/media/F5hM4zWWUAAZ4jg?format=jpg&name=4096x4096');">
+<div class="w-full h-full bg-black/50 flex items-center justify-center p-12 bg-[rgba(0,128,0,0.2)]">
+<div class="text-center text-white animate-fade-in-up">
+<h2 class="text-5xl font-black leading-tight">Nigeria Association of Computing Students</h2>
+<p class="mt-4 text-xl opacity-80">Empowering the next generation of tech leaders in the Clifford Chapter.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<style>
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fade-in-up {
+      animation: fade-in-up 0.8s ease-out forwards;
+    }
+  </style>
+<script>
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+    togglePassword.addEventListener('click', function(e) {
+      // toggle the type attribute
+      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+      password.setAttribute('type', type);
+      // toggle the eye slash icon
+      this.querySelector('span').textContent = type === 'password' ? 'visibility' : 'visibility_off';
+    });
+  </script>
+</body></html>
