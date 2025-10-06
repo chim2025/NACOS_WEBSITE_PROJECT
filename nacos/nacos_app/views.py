@@ -1,80 +1,118 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-from nacos_app.models import CustomUser
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_protect
+from django.contrib import messages
+from .models import CustomUser
 
+@csrf_protect
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
+    #if request.user.is_authenticated:
+        #if request.user.is_migrated and not request.user.has_usable_password():
+            #return redirect('set_password')
+       # return redirect('dashboard')
     
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+    if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
+        
         if user is not None:
             login(request, user)
-            return JsonResponse({'status': 'success', 'message': f'Welcome back, {user.username}!', 'redirect': '/dashboard/'})
-        else:
-            try:
-                user = CustomUser.objects.get(username=username)
-                if user.has_unusable_password() or user.is_migrated:
-                    request.session['user_to_set_password'] = user.id
-                    return JsonResponse({'status': 'set_password', 'message': 'Please create a new password.', 'redirect': '/set-password/'})
-            except CustomUser.DoesNotExist:
-                pass
-            return JsonResponse({'status': 'error', 'message': 'Invalid username or password.'}, status=400)
+            if user.is_migrated and not user.has_usable_password():
+                messages.success(request, 'Please set a new password.')
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': '/set-password/',
+                    'message': 'Please set a new password.'
+                })
+            messages.success(request, 'Login successful.')
+            return JsonResponse({
+                'success': True,
+                'redirect_url': '/dashboard/',
+                'message': 'Login successful.'
+            })
+        messages.error(request, 'Invalid NACOS ID, email, or matric number, or incorrect password.')
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid NACOS ID, email, or matric number, or incorrect password.'
+        }, status=400)
     
-    return render(request, 'code.html')
+    return render(request, 'code.html', {'messages': messages.get_messages(request)})
 
+@csrf_protect
+def set_password_view(request):
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in to set your password.')
+        return redirect('login')
+    
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if password and confirm_password and password == confirm_password:
+            user = request.user
+            user.set_password(password)
+            user.is_migrated = False
+            user.save()
+            logout(request)
+            request.session.flush()
+            messages.success(request, 'Password set successfully. Please log in.')
+            return JsonResponse({
+                'success': True,
+                'redirect_url': '/login/',
+                'message': 'Password set successfully.'
+            })
+        messages.error(request, 'Passwords do not match or are invalid.')
+        return JsonResponse({
+            'success': False,
+            'message': 'Passwords do not match or are invalid.'
+        }, status=400)
+    
+    return render(request, 'set_password.html', {'messages': messages.get_messages(request)})
+
+@login_required
+def dashboard_view(request):
+    return render(request, 'dashboard.html', {'messages': messages.get_messages(request), 'active_tab': 'home'})
+
+def logout_view(request):
+    logout(request)
+    request.session.flush()
+    messages.success(request, 'Logged out successfully.')
+    return redirect('login')
+
+@csrf_protect
+def check_session(request):
+    return JsonResponse({
+        'is_authenticated': request.user.is_authenticated,
+        'username': request.user.username if request.user.is_authenticated else None,
+        'is_migrated': request.user.is_migrated if request.user.is_authenticated else False,
+        'has_usable_password': request.user.has_usable_password() if request.user.is_authenticated else False
+    })
+
+@csrf_protect
 def admin_login_view(request):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin:index')
     
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+    if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
+        
         if user is not None and user.is_staff:
             login(request, user)
-            return JsonResponse({'status': 'success', 'message': f'Welcome, Admin {user.username}!', 'redirect': '/admin/'})
-        return JsonResponse({'status': 'error', 'message': 'Invalid admin credentials or not an admin.'}, status=400)
+            messages.success(request, 'Admin login successful.')
+            return JsonResponse({
+                'success': True,
+                'redirect_url': '/admin/',
+                'message': 'Admin login successful.'
+            })
+        messages.error(request, 'Invalid credentials or not an admin.')
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid credentials or not an admin.'
+        }, status=400)
     
-    return render(request, 'adminlogin.html')
-
-def set_password_view(request):
-    if 'user_to_set_password' not in request.session:
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'error', 'message': 'Invalid session. Please try logging in again.', 'redirect': '/login/'}, status=400)
-        messages.error(request, 'Invalid session. Please try logging in again.')
-        return redirect('login')
-    
-    user_id = request.session.get('user_to_set_password')
-    try:
-        user = CustomUser.objects.get(id=user_id)
-    except CustomUser.DoesNotExist:
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'error', 'message': 'User not found. Please try again.', 'redirect': '/login/'}, status=400)
-        messages.error(request, 'User not found. Please try again.')
-        return redirect('login')
-    
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
-        if password1 and password2 and password1 == password2:
-            user.set_password(password1)
-            user.is_migrated = False
-            user.save()
-            del request.session['user_to_set_password']
-            return JsonResponse({'status': 'success', 'message': 'Password set successfully. Please log in.', 'redirect': '/login/'})
-        return JsonResponse({'status': 'error', 'message': 'Passwords do not match or are invalid.'}, status=400)
-    
-    return render(request, 'nacos_app/set_password.html')
-
-def dashboard_view(request):
-    if not request.user.is_authenticated:
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'error', 'message': 'Please log in to access the dashboard.', 'redirect': '/login/'}, status=401)
-        messages.info(request, 'Please log in to access the dashboard.')
-        return redirect('login')
-    return render(request, 'nacos_app/dashboard.html', {'user': request.user})
+    return render(request, 'adminlogin.html', {'messages': messages.get_messages(request)})

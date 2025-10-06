@@ -1,0 +1,24 @@
+Ctrl click to launch VS Code Native REPL
+Python 3.11.0 (main, Oct 24 2022, 18:26:48) [MSC v.1933 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> from nacos_app.models import CustomUser
+>>> from django.contrib.auth import authenticate
+>>> from django.db.models import Q
+>>> 
+>>> # Verify user data
+>>> user = CustomUser.objects.filter(membership_id='NACOS/CLU/24/100').first()
+>>> print(user.username, user.email, user.matric, user.is_migrated, user.has_usable_password())  # Expect: NACOS/CLU/24/100, chidinmacharity98@gmail.com, CLU/22/SC/CSC/163, True, False
+NACOS/CLU/24/100 chidinmacharity98@gmail.com CLU/22/SC/CSC/163 True False
+>>> 
+>>> # Test authentication
+>>> user = authenticate(username='NACOS/CLU/24/100', password='any')
+>>> print(user)  # Should return user object
+NACOS/CLU/24/100
+>>> user = authenticate(username='chidinmacharity98@gmail.com', password='any')
+>>> print(user)  # Should return same user
+NACOS/CLU/24/100
+>>> user = authenticate(username='CLU/22/SC/CSC/163', password='any')
+>>> print(user)  # Should return same user
+NACOS/CLU/24/100
+>>>

@@ -4,33 +4,720 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NACOS Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
-        body { background-color: #f8f9fa; }
-        .dashboard-container { max-width: 800px; margin: 50px auto; padding: 20px; }
-        .nav-menu { margin-bottom: 20px; }
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <style type="text/tailwindcss">
+        :root {
+            --primary-green: #008000;
+            --accent-emerald: #10b981;
+            --light-gray: #f0f2f5;
+            --dark-bg: #121212;
+            --dark-surface: #1e1e1e;
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .tab-button {
+            position: relative;
+            transition: color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            min-height: 48px;
+            white-space: nowrap;
+        }
+        .tab-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: rgba(0, 128, 0, 0.05);
+        }
+        .tab-button:active {
+            transform: scale(0.95);
+        }
+        .tab-button:hover::after,
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary-green);
+            transform: scaleX(1);
+            transform-origin: bottom left;
+            transition: transform 0.3s ease;
+        }
+       .sortable {
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
+    padding-right: 1.5rem; /* Space for icon */
+}
+.sortable:hover {
+    color: var(--accent-emerald);
+}
+.sortable::after {
+    content: 'sort';
+    font-family: 'Material Symbols Outlined';
+    font-size: 1rem;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+.sortable.asc::after {
+    content: 'arrow_upward';
+}
+.sortable.desc::after {
+    content: 'arrow_downward';
+}
+.sortable:hover::after {
+    opacity: 1;
+}
+.filter-select {
+    background: rgba(237, 240, 239, 0.8);
+    
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--primary-green);
+    appearance: none;
+    
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    padding-right: 2rem;
+    transition: border-color 0.2s ease;
+}
+.filter-select:hover {
+    border-color: var(--accent-emerald);
+}
+.gradient-border {
+    position: relative;
+    border: 2px solid transparent;
+    background: linear-gradient(to right, var(--primary-green), var(--accent-emerald));
+    background-clip: padding-box;
+    border-radius: 12px;
+}
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(to right, white, rgb(170, 180, 174));
+    z-index: -1;
+    border-radius: 14px;
+}
+.gradient-border2::before{
+     content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(to right, var(--primary-green), var(--accent-emerald));
+    z-index: -1;
+    border-radius: 14px;
+}
+.gradient-bg {
+    background: linear-gradient(to right, var(--primary-green), var(--accent-emerald));
+    color: white; /* Ensure readability in light mode */
+    
+}
+.table-row-gradient {
+    background: linear-gradient(to right, white, rgba(16, 185, 129, 0.1));
+    
+    color: var(--primary-green);
+    color: white;
+}
+.carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+}
+.carousel::-webkit-scrollbar {
+    height: 8px;
+}
+.carousel::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+}
+.carousel-item {
+    flex: 0 0 auto;
+    width: 280px;
+    scroll-snap-align: start;
+    animation: fadeIn 0.5s ease-out;
+}
+.flip-card {
+    perspective: 1000px;
+}
+.flip-card-inner {
+    position: relative;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+.flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+}
+.flip-card-front, .flip-card-back {
+    backface-visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+.flip-card-back {
+    transform: rotateY(180deg);
+}
+        .tab-button:not(.active)::after {
+            transform: scaleX(0);
+        }
+        .tab-content {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message {
+            position: relative;
+            padding-right: 2.5rem;
+        }
+        .message-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+        }
+        .tab-menu {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .tab-menu::-webkit-scrollbar {
+            display: none;
+        }
+        .tab-menu ul {
+            max-width: 64rem;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+        }
+        .more-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            min-width: 160px;
+            background-color: var(--light-gray);
+            
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 30;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .more-menu-open {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        .table-row {
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        .table-row:hover {
+            background-color: rgba(16, 185, 129, 0.1);
+            transform: translateX(4px);
+        }
+        .list-item {
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        .list-item:hover {
+            background-color: rgba(16, 185, 129, 0.1);
+            transform: translateX(4px);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .gradient-header {
+            background: linear-gradient(to right, var(--primary-green), var(--accent-emerald));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: rgba(35, 35, 35, .9);
+        }
+        .neumorphic {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 -2px 4px rgba(0, 0, 0, 0.05);
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            
+            border-radius: 12px;
+        }
+        .glassmorphic {
+            background: rgba(255, 255, 255, 0.8);
+           
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          
+        }
+        .pulse-button:hover {
+            animation: pulse 0.5s;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .progress-bar {
+    height: 8px;
+    background: linear-gradient(to right, #547a67, #d3f0dc); /* Blue gradient */
+    border-radius: 4px;
+}
     </style>
 </head>
-<body>
-    <div class="dashboard-container">
-        <h1 class="text-center mb-4">NACOS Student Dashboard</h1>
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        <p>Welcome, {{ user.username }}!</p>
-        <div class="nav-menu">
-            <p><strong>Features (Coming Soon):</strong></p>
-            <ul class="list-group">
-                <li class="list-group-item"><a href="#">Student Voting</a></li>
-                <li class="list-group-item"><a href="#">Online Classes</a></li>
-                <li class="list-group-item"><a href="#">Projects</a></li>
-                <li class="list-group-item"><a href="#">Solvers</a></li>
+<body class="bg-light-gray dark:bg-dark-bg text-gray-900 dark:text-white transition-colors duration-500 min-h-screen">
+    <div class="flex flex-col h-screen">
+        <!-- Header -->
+        <header class="bg-white dark:bg-dark-surface shadow p-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <img alt="NACOS Logo" class="h-8 w-8 sm:h-10 sm:w-10 object-contain" src="https://nacos.org.ng/images/NNL.png"/>
+                <h1 class="ml-2 sm:ml-3 text-lg sm:text-xl font-bold text-[var(--primary-green)]">NACOS <span class="relative top-1 ml-1 text-xs bg-[var(--accent-emerald)] text-white px-1 py-0.5 rounded flex items-center"><span class="material-symbols-outlined text-xs">new_releases</span> new</span></h1>
+            </div>
+            <div class="relative">
+                <button id="user-menu-button" class="flex items-center space-x-1 sm:space-x-2 text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors" aria-label="User menu">
+                    <span class="material-symbols-outlined text-lg sm:text-xl">person</span>
+                    <span class="text-sm sm:text-base">{{ user.surname }} {{ user.first_name }}</span>
+                    <span class="material-symbols-outlined text-lg sm:text-xl">arrow_drop_down</span>
+                </button>
+                <div id="user-menu" class="hidden absolute right-0 mt-2 w-40 sm:w-48 bg-white dark:bg-dark-surface rounded-lg shadow-lg py-2 z-20">
+                    <a href="#" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">View Profile</a>
+                    <a href="{% url 'set_password' %}" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Change Password</a>
+                    <a href="{% url 'logout' %}" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Logout</a>
+                    <a href="#" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Settings</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs (Centered on Desktop) -->
+        <nav class="tab-menu bg-white dark:bg-dark-surface shadow p-3 sm:p-4">
+            <ul class="flex flex-row space-x-2 sm:space-x-4 md:justify-center items-center max-w-4xl mx-auto">
+                <li class="tab-item">
+                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'home' %}active text-[var(--primary-green)]{% endif %}" data-tab="home" aria-controls="home" aria-selected="{% if active_tab == 'home' %}true{% else %}false{% endif %}">
+                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">home</span> Home
+                    </button>
+                </li>
+                <li class="tab-item">
+                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'finance' %}active text-[var(--primary-green)]{% endif %}" data-tab="finance" aria-controls="finance" aria-selected="{% if active_tab == 'finance' %}true{% else %}false{% endif %}">
+                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">account_balance</span> Finance
+                    </button>
+                </li>
+                <li class="tab-item">
+                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'elections' %}active text-[var(--primary-green)]{% endif %}" data-tab="elections" aria-controls="elections" aria-selected="{% if active_tab == 'elections' %}true{% else %}false{% endif %}">
+                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">how_to_vote</span> Elections
+                    </button>
+                </li>
+                <li class="tab-item">
+                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'lectures' %}active text-[var(--primary-green)]{% endif %}" data-tab="lectures" aria-controls="lectures" aria-selected="{% if active_tab == 'lectures' %}true{% else %}false{% endif %}">
+                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">live_tv</span> Live Lectures
+                    </button>
+                </li>
+                <li class="tab-item">
+                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'updates' %}active text-[var(--primary-green)]{% endif %}" data-tab="updates" aria-controls="updates" aria-selected="{% if active_tab == 'updates' %}true{% else %}false{% endif %}">
+                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">notifications</span> Updates
+                    </button>
+                </li>
+                <li class="tab-item hidden" id="more-tab">
+                    <button id="more-button" class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors" aria-label="More navigation options">
+                        <span class="material-symbols-outlined inline-block align-middle text-lg">more_horiz</span>
+                    </button>
+                    <div id="more-menu" class="more-menu hidden">
+                        <!-- Overflow tabs will be injected here -->
+                    </div>
+                </li>
             </ul>
+        </nav>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="message-container max-w-4xl mx-auto mt-4 px-4">
+                {% for message in messages %}
+                    {% if forloop.first %}
+                        <div class="message bg-{% if message.tags == 'success' %}green-100{% else %}red-100{% endif %} border-l-4 border-{% if message.tags == 'success' %}green-500{% else %}red-500{% endif %} text-{% if message.tags == 'success' %}green-700{% else %}red-700{% endif %} p-3 sm:p-4 rounded-r-lg relative text-sm sm:text-base">
+                            {{ message }}
+                            <button type="button" class="message-close text-{% if message.tags == 'success' %}green-700{% else %}red-700{% endif %} hover:text-{% if message.tags == 'success' %}green-900{% else %}red-900{% endif %} text-lg" aria-label="Close message">&times;</button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="message-container max-w-4xl mx-auto mt-4 px-4" style="display: none;"></div>
+        {% endif %}
+
+        <!-- Tab Content -->
+        <main class="flex-1 p-4 sm:p-6 max-w-4xl mx-auto">
+            <div id="home" class="tab-content {% if active_tab == 'home' %}block{% else %}hidden{% endif %}">
+                <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Home</h2>
+                <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 mb-6 border-2 border-transparent gradient-bg">
+                    <div class="flex items-center space-x-3">
+                        <span class="material-symbols-outlined text-3xl text-white">celebration</span>
+                        <div>
+                            <h3 class="text-lg sm:text-xl font-semibold text-white">Welcome, {{ user.surname }} {{ user.first_name }}!</h3>
+                            <p class="text-gray-200 text-sm sm:text-base mt-1">Your NACOS hub for membership, finance, and more.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">verified_user</span>
+                            <h4 class="text-base sm:text-lg font-medium">Membership Status</h4>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Active Member</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">Last updated: {% now "F d, Y" %}</p>
+                    </div>
+                    <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">history</span>
+                            <h4 class="text-base sm:text-lg font-medium">Recent Activity</h4>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">No recent activity.</p>
+                        <button class="mt-3 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">View All</button>
+                    </div>
+                    <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4 sm:col-span-2 lg:col-span-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">event</span>
+                            <h4 class="text-base sm:text-lg font-medium">Upcoming Events</h4>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">No events scheduled.</p>
+                        <button class="mt-3 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Explore Events</button>
+                    </div>
+                </div>
+            </div>
+            <div id="finance" class="tab-content {% if active_tab == 'finance' %}block{% else %}hidden{% endif %}">
+    <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Finance</h2>
+    <div class="max-w-6xl mx-auto md:p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="card neumorphic rounded-xl p-6 gradient-border">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="material-symbols-outlined text-3xl text-[var(--primary-green)]">account_balance_wallet</span>
+                    <h3 class="text-lg sm:text-xl font-semibold gradient-header">Account Balance</h3>
+                </div>
+                <p class="text-3xl sm:text-4xl font-bold mt-2">₦0.00</p>
+                <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">As of {% now "F d, Y" %}</p>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Income</p>
+                        <p class="text-lg font-semibold text-[var(--primary-green)]">₦0.00</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Expenses</p>
+                        <p class="text-lg font-semibold text-[var(--primary-green)]">₦0.00</p>
+                    </div>
+                </div>
+                <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Add Funds</button>
+            </div>
+            <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-6">
+                <h3 class="text-lg sm:text-xl font-semibold mb-4 gradient-header">Transaction History</h3>
+                <table class="w-full text-sm sm:text-base divide-y dark:divide-gray-700">
+                    <thead>
+                        <tr class="text-left text-gray-600 dark:text-gray-400">
+                            <th class="py-3 sortable" data-sort="date">Date</th>
+                            <th class="py-3 sortable" data-sort="description">Description</th>
+                            <th class="py-3 sortable" data-sort="amount">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: black;">
+                        {% for i in "123" %}
+                        <tr class="table-row table-row-gradient" style="color: rgb(24, 34, 28);">
+                            <td class="py-3 flex items-center space-x-2">
+                                <span class="material-symbols-outlined text-lg text-[var(--primary-green)]">receipt_long</span>
+                                <span>{% now "F d, Y" %}</span>
+                            </td>
+                            <td class="py-3">Pending transaction...</td>
+                            <td class="py-3">₦0.00</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Load More</button>
+            </div>
         </div>
-        <a href="{% url 'logout' %}" class="btn btn-primary">Logout</a>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</div>
+            <div id="elections" class="tab-content {% if active_tab == 'elections' %}block{% else %}hidden{% endif %}">
+    <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Elections</h2>
+    <div class="max-w-6xl mx-auto md:p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 gradient-border2">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="material-symbols-outlined text-3xl text-[var(--light-gray)]">how_to_vote</span>
+                    <h3 class="text-lg sm:text-xl font-semibold gradient-header" style="color: #ffffff;">Upcoming Election</h3>
+                    <span class="text-xs bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full">Upcoming</span>
+                </div>
+                <p  style="color: var(--light-gray);"  class="text-gray-600 text-sm mt-2">No elections scheduled.</p>
+                <div style="color: burlywood;"  class="mt-3 text-sm text-gray-500 ">Starts in: <span>TBD</span></div>
+                <div class="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div class="progress-bar w-1/3"></div>
+                </div>
+                <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Vote Now</button>
+            </div>
+            <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg sm:text-xl font-semibold gradient-header">Candidates</h3>
+                   <select class="filter-select">
+                        <option>Filter by Position</option>
+                        <option>President</option>
+                        <option>Secretary</option>
+                    </select>
+                </div>
+                <table class="w-full text-sm sm:text-base divide-y dark:divide-gray-700">
+                    <thead>
+                        <tr class="text-left text-gray-600 dark:text-gray-400">
+                            <th class="py-3 sortable" data-sort="name">Name</th>
+                            <th class="py-3 sortable" data-sort="position">Position</th>
+                            <th class="py-3 sortable" data-sort="status">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in "12" %}
+                        <tr class="table-row table-row-gradient" style="color: var(--primary-green);">
+                            <td class="py-3 flex items-center space-x-2">
+                                <span class="material-symbols-outlined text-lg text-[var(--primary-green)] hover:scale-125 transition-transform">person</span>
+                                <span>Pending candidate...</span>
+                            </td>
+                            <td class="py-3">-</td>
+                            <td class="py-3">N/A</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+           <div id="lectures" class="tab-content {% if active_tab == 'lectures' %}block{% else %}hidden{% endif %}">
+    <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Live Lectures</h2>
+    <div class="max-w-6xl mx-auto md:p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="card glassmorphic rounded-xl p-6 flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <span class="material-symbols-outlined text-3xl text-[var(--primary-green)]">play_circle</span>
+                            <h3 class="text-lg sm:text-xl font-semibold gradient-header">Next Lecture</h3>
+                        </div>
+                        <div class="relative aspect-video rounded-md overflow-hidden">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/zOjov-2OZ0E" title="Lecture Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <span class="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full">Live</span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Introduction to AI - Dr. John Doe</p>
+                        <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">Starts in: <span>2h 30m</span></div>
+                        <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Join Now</button>
+                    </div>
+                    <div class="flip-card-back glassmorphic rounded-xl p-6">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Lecture Details: Learn AI fundamentals from Dr. John Doe. Covers machine learning basics and practical applications.</p>
+                        <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Back</button>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg sm:text-xl font-semibold gradient-header">Lecture Schedule</h3>
+                    <select class="filter-select">
+                        <option>Filter by Topic</option>
+                        <option>Technology</option>
+                        <option>Leadership</option>
+                        <option>Data Science</option>
+                    </select>
+                </div>
+                <div class="carousel">
+                    {% for i in "123" %}
+                    <div class="carousel-item card glassmorphic rounded-xl p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="material-symbols-outlined text-lg text-[var(--primary-green)]">event</span>
+                            <h4 class="text-base font-medium">Lecture {{ i }}</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Speaker: TBD</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{% now "F d, Y H:i" %}</p>
+                        <div class="flex space-x-2 mt-3">
+                            <button class="px-3 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)] flex items-center">
+                                <span class="material-symbols-outlined text-lg mr-1">calendar_add_on</span> Add to Calendar
+                            </button>
+                            <button class="px-3 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)] flex items-center watch-later">
+                                <span class="material-symbols-outlined text-lg mr-1">bookmark</span> Watch Later
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+            <div id="updates" class="tab-content {% if active_tab == 'updates' %}block{% else %}hidden{% endif %}">
+                <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Updates</h2>
+                <div class="space-y-4">
+                    {% for i in "12" %}
+                    <div class="card glassmorphic rounded-xl p-6">
+                        <div class="flex items-center space-x-3">
+                            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">notifications</span>
+                            <h3 class="text-base sm:text-lg font-semibold gradient-header">{% if forloop.first %}Latest Update{% else %}Previous Update{% endif %}</h3>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">No updates available.</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">{% now "F d, Y H:i" %}</p>
+                        <button class="mt-3 px-4 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)]">{% if forloop.first %}Pin Update{% else %}View Details{% endif %}</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const moreButton = document.getElementById('more-button');
+            const moreMenu = document.getElementById('more-menu');
+            const tabItems = document.querySelectorAll('.tab-item');
+            const navContainer = document.querySelector('.tab-menu ul');
+            let visibleTabs = [];
+            // Sortable table headers
+const sortableHeaders = document.querySelectorAll('.sortable');
+sortableHeaders.forEach(header => {
+    header.addEventListener('click', () => {
+        const sortKey = header.getAttribute('data-sort');
+        const isAsc = header.classList.contains('asc');
+        sortableHeaders.forEach(h => {
+            h.classList.remove('asc', 'desc');
+        });
+        header.classList.add(isAsc ? 'desc' : 'asc');
+        // Placeholder: Add actual sorting logic here
+        console.log(`Sorting by ${sortKey}, ${isAsc ? 'descending' : 'ascending'}`);
+    });
+});
+
+// Watch Later toggle
+const watchLaterButtons = document.querySelectorAll('.watch-later');
+watchLaterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const icon = button.querySelector('.material-symbols-outlined');
+        icon.textContent = icon.textContent === 'bookmark' ? 'bookmark_added' : 'bookmark';
+        button.classList.toggle('text-[var(--accent-emerald)]');
+    });
+});
+
+            // Handle tab overflow for small screens
+            function updateNav() {
+                const navWidth = navContainer.offsetWidth;
+                let totalWidth = 0;
+                const moreTab = document.getElementById('more-tab');
+                visibleTabs = [];
+                moreMenu.innerHTML = '';
+
+                tabItems.forEach((item, index) => {
+                    if (index < tabItems.length - 1) { // Exclude more-tab
+                        item.classList.remove('hidden');
+                        totalWidth += item.offsetWidth;
+                        if (totalWidth > navWidth - 60) { // Reserve space for More button
+                            item.classList.add('hidden');
+                            const button = item.querySelector('.tab-button');
+                            const clone = button.cloneNode(true);
+                            clone.classList.remove('active', 'text-[var(--primary-green)]');
+                            moreMenu.appendChild(clone);
+                        } else {
+                            visibleTabs.push(item);
+                        }
+                    }
+                });
+
+                moreTab.classList.toggle('hidden', moreMenu.children.length === 0);
+            }
+
+            // Initial nav update and resize listener
+            updateNav();
+            window.addEventListener('resize', updateNav);
+
+            // More menu toggle
+            if (moreButton) {
+                moreButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moreMenu.classList.toggle('more-menu-open');
+                });
+            }
+
+            // Tab switching
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tab = button.getAttribute('data-tab');
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active', 'text-[var(--primary-green)]');
+                        btn.setAttribute('aria-selected', 'false');
+                    });
+                    const targetContent = document.getElementById(tab);
+                    if (targetContent) {
+                        targetContent.classList.remove('hidden');
+                    }
+                    button.classList.add('active', 'text-[var(--primary-green)]');
+                    button.setAttribute('aria-selected', 'true');
+                    moreMenu.classList.remove('more-menu-open');
+                });
+            });
+
+            // User dropdown
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            userMenuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenu.classList.toggle('hidden');
+            });
+            document.addEventListener('click', (e) => {
+                if (!userMenuButton.contains(e.target) && !userMenu.contains(e.target)) {
+                    userMenu.classList.add('hidden');
+                }
+                if (!moreButton || !moreMenu.contains(e.target) && !moreButton.contains(e.target)) {
+                    moreMenu.classList.remove('more-menu-open');
+                }
+            });
+
+            // Auto-dismiss messages
+            const message = document.querySelector('.message');
+            if (message) {
+                const closeButton = message.querySelector('.message-close');
+                closeButton.addEventListener('click', () => {
+                    message.style.display = 'none';
+                });
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 30000);
+            }
+        });
+    </script>
 </body>
 </html>

@@ -23,13 +23,16 @@ from django.urls import path
 from django.shortcuts import redirect
 from nacos_app.views import login_view, admin_login_view, set_password_view, dashboard_view
 from django.contrib.auth.views import LogoutView
+from django.urls import path, include
+from nacos_app import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # Django admin
-    path('login/', login_view, name='login'),
-    path('admin-login/', admin_login_view, name='admin_login'),
-    path('set-password/', set_password_view, name='set_password'),
-    path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
-    path('dashboard/', dashboard_view, name='dashboard'),
+    path('login/', views.login_view, name='login'),
+    path('set-password/', views.set_password_view, name='set_password'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('logout/', views.logout_view, name='logout'),
+    path('admin-login/', views.admin_login_view, name='admin_login'),
+    path('check-session/', views.check_session, name='check_session'),
+    path('admin/', admin.site.urls),
     path('', lambda request: redirect('login'), name='home'),
 ]

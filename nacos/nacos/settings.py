@@ -102,6 +102,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
+AUTH_USER_MODEL = 'nacos_app.CustomUser'
+AUTHENTICATION_BACKENDS = [
+    'nacos_app.auth_backend.CustomUserBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 LANGUAGE_CODE = 'en-us'
 
@@ -123,3 +128,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'  # Added for collectstatic
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Expire session on browser close
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
