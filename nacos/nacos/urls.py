@@ -25,6 +25,8 @@ from nacos_app.views import login_view, admin_login_view, set_password_view, das
 from django.contrib.auth.views import LogoutView
 from django.urls import path, include
 from nacos_app import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('login/', views.login_view, name='login'),
@@ -34,5 +36,8 @@ urlpatterns = [
     path('admin-login/', views.admin_login_view, name='admin_login'),
     path('check-session/', views.check_session, name='check_session'),
     path('admin/', admin.site.urls),
+    
+    path('upload-profile-picture/', views.upload_profile_picture, name='upload_profile_picture'),
+    path('edit-profile/', views.edit_profile, name='edit_profile'),
     path('', lambda request: redirect('login'), name='home'),
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

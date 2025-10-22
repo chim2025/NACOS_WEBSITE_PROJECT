@@ -50,7 +50,7 @@ def import_users(json_file):
                     firebase_uid=user_data.get('index', ''),
                     is_migrated=True,
                     matric=matric or '',
-                    level=user_data.get('level', ''),
+                    level=int(user_data.get('level', ''))+100,
                     course=user_data.get('course', ''),
                     clubs=user_data.get('clubs', []),
                     phone=user_data.get('phone', ''),
@@ -63,6 +63,7 @@ def import_users(json_file):
                     parent_phone=user_data.get('parentphone', ''),
                     mother_name=user_data.get('mother', ''),
                     room=user_data.get('room', ''),
+                    timestamp=user_data.get("timestamp", '')
                 )
                 user.set_unusable_password()  # Set unusable password for lazy migration
                 user.save()

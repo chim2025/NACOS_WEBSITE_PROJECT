@@ -22,6 +22,8 @@ class CustomUser(AbstractUser):
     parent_phone = models.CharField(max_length=20, blank=True, null=True)
     mother_name = models.CharField(max_length=100, blank=True, null=True)
     room = models.CharField(max_length=20, blank=True, null=True)
+    timestamp=models.CharField(max_length=200, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True, default=None)  # Profile picture field
 
     # Override groups and user_permissions to avoid reverse accessor conflicts
     groups = models.ManyToManyField(
