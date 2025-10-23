@@ -21,23 +21,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.shortcuts import redirect
-from nacos_app.views import login_view, admin_login_view, set_password_view, dashboard_view
-from django.contrib.auth.views import LogoutView
 from django.urls import path, include
-from nacos_app import views
+
 from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
-    path('login/', views.login_view, name='login'),
-    path('set-password/', views.set_password_view, name='set_password'),
-    path('dashboard/', views.dashboard_view, name='dashboard'),
-    path('logout/', views.logout_view, name='logout'),
-    path('admin-login/', views.admin_login_view, name='admin_login'),
-    path('check-session/', views.check_session, name='check_session'),
+    path('', include('nacos_app.urls')),
+    path('officer/', include('election_officer.urls')),  # Correct prefix
     path('admin/', admin.site.urls),
-    
-    path('upload-profile-picture/', views.upload_profile_picture, name='upload_profile_picture'),
-    path('edit-profile/', views.edit_profile, name='edit_profile'),
-    path('', lambda request: redirect('login'), name='home'),
+    path('', lambda request: redirect('nacos_app:login'), name='home'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

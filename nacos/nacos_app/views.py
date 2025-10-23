@@ -10,7 +10,6 @@ from django.contrib import messages
 import base64
 import json
 from django.core.exceptions import ValidationError
-from .models import CustomUser
 
 @csrf_protect
 def login_view(request):
@@ -261,3 +260,55 @@ def admin_login_view(request):
         }, status=400)
     
     return render(request, 'adminlogin.html', {'messages': messages.get_messages(request)})
+# Defer model imports to avoid circular issues
+def submit_contest_application(request):
+    from nacos_app.models import ContestApplication, UserMessage  # Lazy import
+    try:
+        data = json.loads(request.body)
+        position = data.get('position')
+        manifesto = data.get('manifesto')
+        statement_of_result = request.FILES.get('statement_of_result')
+        account_statement = request.FILES.get('account_statement')
+
+        if not position or not manifesto:
+            return JsonResponse({
+                'success': False,
+                'message': 'Position and manifesto are required.'
+            }, status=400)
+
+        if position not in dict(ContestApplication.POSITION_CHOICES).keys():
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid position selected.'
+            }, status=400)
+
+        application = ContestApplication(
+            user=request.user,
+            position=position,
+            manifesto=manifesto,
+            statement_of_result=statement_of_result,
+            account_statement=account_statement,
+        )
+        application.save()
+
+        UserMessage.objects.create(
+            user=request.user,
+            message_text='Your contest application has been submitted and is awaiting admin approval.'
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Application submitted successfully.',
+            'application_id': application.id
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error submitting application: {str(e)}'
+        }, status=500)

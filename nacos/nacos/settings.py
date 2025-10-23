@@ -39,26 +39,40 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'nacos_app.apps.NacosAppConfig',
+    
+    'election_officer',
 ]
+
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Must be before AuthenticationMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Must be after SessionMiddleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    
 ]
 
+
 ROOT_URLCONF = 'nacos.urls'
+
+import os
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'frontend' / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'frontend' / 'templates',
+            BASE_DIR / 'templates',
+            BASE_DIR / 'election_officer' / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,6 +83,24 @@ TEMPLATES = [
         },
     },
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 WSGI_APPLICATION = 'nacos.wsgi.application'
 
@@ -105,11 +137,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
-AUTH_USER_MODEL = 'nacos_app.CustomUser'
+
+AUTH_USER_MODEL = 'nacos_app.CustomUser'  # Confirm this is correct
+LOGIN_URL = '/officer/login/'  # Already set, confirm it’s present
 AUTHENTICATION_BACKENDS = [
     'nacos_app.auth_backend.CustomUserBackend',
     'django.contrib.auth.backends.ModelBackend',
+    'election_officer.backends.CustomAuthBackend',  # Custom backend
+    'django.contrib.auth.backends.ModelBackend',   # Default backend
 ]
+    
+
 
 LANGUAGE_CODE = 'en-us'
 
@@ -139,3 +177,4 @@ CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+LOGIN_URL = '/officer/login/'  
