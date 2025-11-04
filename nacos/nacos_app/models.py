@@ -79,20 +79,91 @@ class ContestApplication(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.position}"
 
+# nacos_app/models.py
+from django.contrib.auth import get_user_model
+from election_officer.models import ElectionOfficer  # ← Import
+
 class ElectionTimeline(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='election_timelines')
-    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        'election_officer.ElectionOfficer',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='election_timelines'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)  # ← NEW
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Election from {self.start_date} to {self.end_date}"
+        return f"Election: {self.start_date} → {self.end_date}"
+
+
+
+class ElectionPosition(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Election Position"
+        verbose_name_plural = "Election Positions"
+
+    def __str__(self):
+        return self.name
+
+
+class ContestApplication(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    position = models.ForeignKey(ElectionPosition, on_delete=models.CASCADE)
+    manifesto = models.TextField(max_length=200)
+    statement_of_result = models.FileField(upload_to='contest/results/')
+    account_statement = models.FileField(upload_to='contest/accounts/')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user} - {self.position}"
+
 
 class UserMessage(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='messages')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     message_text = models.TextField()
-    sent_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Message to {self.user.username} at {self.sent_at}"
+        return f"Message for {self.user}: {self.message_text[:50]}"
+    
+
+from django.core.exceptions import ValidationError
+class Vote(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='votes')
+    candidate = models.ForeignKey('ContestApplication', on_delete=models.CASCADE)
+    position = models.ForeignKey('ElectionPosition', on_delete=models.CASCADE)
+    election = models.ForeignKey('ElectionTimeline', on_delete=models.CASCADE)
+    voted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'election', 'position')  
+        indexes = [
+            models.Index(fields=['user', 'election']),
+            models.Index(fields=['candidate']),
+            models.Index(fields=['election', 'position']),
+        ]
+        ordering = ['-voted_at']
+        verbose_name = "Vote"
+        verbose_name_plural = "Votes"
+
+    def clean(self):
+        """Ensure vote is within election time"""
+        if not (self.election.start_date <= timezone.now() <= self.election.end_date):
+            raise ValidationError("Voting is not allowed at this time.")
+
+    def __str__(self):
+        return f"{self.user} → {self.candidate.user} ({self.position.name})"

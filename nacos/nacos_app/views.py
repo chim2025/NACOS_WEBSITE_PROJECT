@@ -10,13 +10,25 @@ from django.contrib import messages
 import base64
 import json
 from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from .models import ContestApplication, ElectionPosition, ElectionTimeline, UserMessage, Vote
+from django.contrib.auth import get_user_model
+import logging
+from django.shortcuts import get_object_or_404
+from election_officer.models import ElectionOfficer
+from django.utils import timezone
+from django.db.models import Count
+import json
+
+logger = logging.getLogger(__name__)
 
 @csrf_protect
 def login_view(request):
     if request.user.is_authenticated:
-        if request.user.is_migrated and not request.user.has_usable_password():
-            return redirect('set_password')
-        return redirect('dashboard')
+        if isinstance(request.user, ElectionOfficer):
+            return redirect('election_officer:officer_dashboard')
+        return redirect('nacos_app:student_dashboard')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -51,7 +63,7 @@ def login_view(request):
 def set_password_view(request):
     if not request.user.is_authenticated:
         messages.error(request, 'Please log in to set your password.')
-        return redirect('login')
+        return redirect('nacos_app:login')
     
     if request.method == 'POST':
         password = request.POST.get('password')
@@ -78,13 +90,42 @@ def set_password_view(request):
     
     return render(request, 'set_password.html', {'messages': messages.get_messages(request)})
 
+CustomUser = get_user_model()
+
+# views.py
+from .models import UserMessage
+
 @login_required
 def dashboard_view(request):
+    user = request.user
+
+    if hasattr(user, 'electionofficer'):
+        return redirect('election_officer:officer_dashboard')
+
+    active_tab = request.GET.get('tab', 'home')
+    has_profile_picture = bool(getattr(user, 'profile_picture', None))
+
+    # GET USER'S MESSAGES (UNREAD FIRST)
+    user_messages = UserMessage.objects.filter(user=user).order_by('-is_read', '-created_at')
+    approved_candidates = ContestApplication.objects.filter(
+        approved=True
+    ).select_related('user', 'position').order_by('position__name')
+    positions = ElectionPosition.objects.filter(
+        contestapplication__approved=True
+    ).distinct().order_by('name')
+    unread_count = UserMessage.objects.filter(user=request.user, is_read=False).count()
+    
+
     context = {
         'messages': messages.get_messages(request),
-        'active_tab': 'home',
-        'show_profile_upload': not request.user.profile_picture
+        'active_tab': active_tab,
+        'show_profile_upload': not has_profile_picture,
+        'is_student': True,
+        'approved_candidates': approved_candidates,
+        'positions': positions,
+        'user_messages': user_messages,  # PASS TO TEMPLATE
     }
+    context['unread_count'] = unread_count
     return render(request, 'dashboard.html', context)
 
 @login_required
@@ -205,7 +246,7 @@ def logout_view(request):
     logout(request)
     request.session.flush()
     messages.success(request, 'Logged out successfully.')
-    return redirect('login')
+    return redirect('nacos_app:login')
 
 @ensure_csrf_cookie
 @csrf_protect
@@ -260,28 +301,48 @@ def admin_login_view(request):
         }, status=400)
     
     return render(request, 'adminlogin.html', {'messages': messages.get_messages(request)})
-# Defer model imports to avoid circular issues
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
 def submit_contest_application(request):
-    from nacos_app.models import ContestApplication, UserMessage  # Lazy import
     try:
-        data = json.loads(request.body)
-        position = data.get('position')
-        manifesto = data.get('manifesto')
+        # === GET DATA FROM FormData ===
+        position_name = request.POST.get('position')
+        manifesto = request.POST.get('manifesto')
         statement_of_result = request.FILES.get('statement_of_result')
         account_statement = request.FILES.get('account_statement')
 
-        if not position or not manifesto:
+        # === VALIDATE ===
+        if not all([position_name, manifesto, statement_of_result, account_statement]):
             return JsonResponse({
                 'success': False,
-                'message': 'Position and manifesto are required.'
+                'message': 'All fields are required: position, manifesto, and both PDFs.'
             }, status=400)
 
-        if position not in dict(ContestApplication.POSITION_CHOICES).keys():
+        if len(manifesto) > 200:
+            return JsonResponse({
+                'success': False,
+                'message': 'Manifesto must be 200 characters or less.'
+            }, status=400)
+
+        # === GET POSITION FROM DB ===
+        try:
+            position = ElectionPosition.objects.get(name=position_name)
+        except ElectionPosition.DoesNotExist:
             return JsonResponse({
                 'success': False,
                 'message': 'Invalid position selected.'
             }, status=400)
 
+        # === CHECK DUPLICATE APPLICATION ===
+        if ContestApplication.objects.filter(user=request.user, position=position).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'You have already applied for this position.'
+            }, status=400)
+
+        # === SAVE APPLICATION ===
         application = ContestApplication(
             user=request.user,
             position=position,
@@ -291,24 +352,200 @@ def submit_contest_application(request):
         )
         application.save()
 
+        # === CREATE USER MESSAGE ===
         UserMessage.objects.create(
             user=request.user,
             message_text='Your contest application has been submitted and is awaiting admin approval.'
         )
 
+        # === SUCCESS RESPONSE ===
         return JsonResponse({
             'success': True,
-            'message': 'Application submitted successfully.',
+            'message': 'Application submitted successfully!',
             'application_id': application.id
         })
 
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'success': False,
-            'message': 'Invalid JSON data.'
-        }, status=400)
     except Exception as e:
+        logger.error(f"Contest submission error for user {request.user}: {str(e)}", exc_info=True)
         return JsonResponse({
             'success': False,
-            'message': f'Error submitting application: {str(e)}'
+            'message': 'Server error. Please try again later.'
         }, status=500)
+
+
+
+from .models import ElectionPosition  # <-- Import from nacos_app
+
+@login_required
+def get_positions_api(request):
+    positions = ElectionPosition.objects.all().values('id', 'name', 'description')
+    return JsonResponse({'positions': list(positions)})
+from .models import ContestApplication
+
+@login_required
+def check_contest_status(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'applied': False})
+
+    try:
+        app = ContestApplication.objects.get(user=request.user)
+        return JsonResponse({
+            'applied': True,
+            'approved': app.approved,
+            'rejected': app.rejected,
+        })
+    except ContestApplication.DoesNotExist:
+        return JsonResponse({'applied': False})
+@login_required
+def mark_message_read(request, message_id):
+    if request.method == 'POST':
+        msg = get_object_or_404(UserMessage, id=message_id, user=request.user)
+        msg.is_read = not msg.is_read  # Toggle
+        msg.save()
+    return redirect('nacos_app:student_dashboard')
+from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def ajax_mark_message_read(request):
+    message_id = request.POST.get('message_id')
+    try:
+        msg = UserMessage.objects.get(id=message_id, user=request.user)
+        msg.is_read = not msg.is_read
+        msg.save()
+        return JsonResponse({
+            'success': True,
+            'is_read': msg.is_read,
+            'message': 'Status updated.'
+        })
+    except UserMessage.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Message not found.'}, status=404)
+@login_required
+def get_latest_timeline(request):
+    from django.utils import timezone
+    latest = ElectionTimeline.objects.order_by('-created_at', '-id').first()
+    if latest and latest.start_date and latest.end_date:
+        local_tz = timezone.get_current_timezone()
+        local_start = latest.start_date.astimezone(local_tz)
+        local_end = latest.end_date.astimezone(local_tz)
+        return JsonResponse({
+            'success': True,
+            'latest': {
+                'start_date': local_start.replace(tzinfo=None).isoformat(),
+                'end_date': local_end.replace(tzinfo=None).isoformat(),
+            }
+        })
+    return JsonResponse({'success': False, 'message': 'No timeline set'})
+@login_required
+def get_election_data(request):
+    """Return positions, candidates, and user vote status"""
+    election = ElectionTimeline.objects.filter(
+        start_date__lte=timezone.now(),
+        end_date__gte=timezone.now()
+    ).first()
+
+    if not election:
+        return JsonResponse({'error': 'No active election'}, status=400)
+
+    user_votes = Vote.objects.filter(user=request.user, election=election)
+    has_voted = user_votes.exists()
+    voted_positions = list(user_votes.values_list('position_id', flat=True))
+
+    positions = ElectionPosition.objects.all()
+    applications = ContestApplication.objects.filter(approved=True)
+
+    return JsonResponse({
+        'election_id': election.id,
+        'has_voted': has_voted,
+        'voted_positions': voted_positions,
+        'positions': [
+            {'id': p.id, 'name': p.name}
+            for p in positions
+        ],
+        'candidates': [
+            {
+                'id': app.id,
+                'name': f"{app.user.surname} {app.user.first_name}".strip() or app.user.username,
+                'nacos_id': app.user.matric or app.user.membership_id,
+                'position_id': app.position_id,
+                'photo': app.user.profile_picture.url if app.user.profile_picture else None
+            }
+            for app in applications
+        ]
+    })
+@login_required
+@require_http_methods(["POST"])
+def submit_vote(request):
+    """Save votes — middleware already validated"""
+    votes = getattr(request, 'validated_votes', {})
+    election = getattr(request, 'active_election', None)
+
+    if not votes or not election:
+        return JsonResponse({'error': 'Invalid submission'}, status=400)
+
+    saved_count = 0
+    for position_id, candidate_id in votes.items():
+        app = ContestApplication.objects.get(id=candidate_id)
+        Vote.objects.create(
+            user=request.user,
+            candidate=app,
+            position=app.position,
+            election=election
+        )
+        UserMessage.objects.create(
+            user=request.user,
+            message_text='Your votes has been recorded in our database. Thank you for your participation.'
+        )
+        saved_count += 1
+
+    return JsonResponse({
+        'success': True,
+        'message': f'Vote submitted for {saved_count} position(s)'
+    })
+from django.db.models import Count
+
+# views.py
+from django.utils import timezone
+
+@login_required
+def get_live_results(request):
+    # Get the most recent election (active OR ended)
+    election = ElectionTimeline.objects.filter(
+        start_date__lte=timezone.now()
+    ).order_by('-end_date').first()
+
+    if not election:
+        return JsonResponse({'positions': []})
+
+    positions = ElectionPosition.objects.all()
+    results = []
+
+    for pos in positions:
+        vote_counts = Vote.objects.filter(
+            position=pos, election=election
+        ).values('candidate').annotate(votes=Count('candidate'))
+
+        candidates = []
+        for vc in vote_counts:
+            try:
+                app = ContestApplication.objects.get(id=vc['candidate'])
+                candidates.append({
+                    'id': app.id,
+                    'name': f"{app.user.surname} {app.user.first_name}".strip() or app.user.username,
+                    'photo': app.user.profile_picture.url if app.user.profile_picture else None,
+                    'votes': vc['votes']
+                })
+            except ContestApplication.DoesNotExist:
+                continue
+
+        results.append({
+            'id': pos.id,
+            'name': pos.name,
+            'candidates': candidates
+        })
+
+    # THIS LINE IS CRITICAL
+    return JsonResponse({
+        'positions': results,
+        'election_status': 'ended' if election.end_date < timezone.now() else 'live'
+    })

@@ -1,107 +1,887 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Election Officer Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>NACOS Election Officer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'styles.css' %}">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        :root {
+            --primary-green: #008000;
+            --accent-emerald: #10b981;
+            --light-gray: #f0f2f5;
+            --dark-bg: #121212;
+            --dark-surface: #1e1e1e;
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+      </style>
+  
+  
+ <script>
+  window.APP_URLS = {
+    
+    update_timeline: "{% url 'election_officer:update_election_timeline' %}",
+    create_position: "{% url 'election_officer:create_position' %}",
+    get_positions: "{% url 'election_officer:get_positions' %}",
+    manage_application: "{% url 'election_officer:manage_contest_application' %}",
+    live_results: "{% url 'election_officer:election_live' %}",
+    notifications: "{% url 'election_officer:officer_notifications' %}"
+  };
+  const deleteUrl = "{% url 'election_officer:delete_position' 999 %}";
+    
+    window.APP_URLS.delete_position = deleteUrl.replace(/999\/?$/, '');
+
+    // Initial load
+    
+  
+  window.APP_URLS.get_latest_timeline = "{% url 'election_officer:get_latest_timeline' %}";
+  loadPositions();
+ 
+  
+</script>
+
+
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-green-600 text-white p-4">
-        <div class="container mx-auto flex justify-between">
-            <h1 class="text-xl font-bold">Election Officer Dashboard</h1>
-            <a href="{% url 'election_officer:officer_logout' %}" class="hover:underline">Logout</a>
-        </div>
-    </nav>
-    <div class="container mx-auto p-4">
-        <h2 class="text-2xl font-bold mb-4">Current Time: {{ current_time|date:'h:i A' }}</h2>
-        <section class="mb-8">
-            <h3 class="text-xl font-semibold mb-2">Set Election Timeline</h3>
-            <form method="post" action="{% url 'election_officer:update_election_timeline' %}">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Start Date</label>
-                    <input type="datetime-local" name="start_date" class="mt-1 p-2 w-full border rounded" required>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tbody = document.getElementById('apps-tbody');
+  let pendingAction = null;
+  let student=""
+  function loadApplications() {
+    fetch("{% url 'election_officer:get_applications_api' %}")
+      .then(r => r.json())
+      .then(data => {
+        const apps = data.applications || [];
+        student=apps.student
+        if (apps.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">No applications yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = apps.map(app => `
+          <tr data-id="${app.id}">
+            <td class="py-3">
+              <div class="flex items-center space-x-3">
+                <img src="${app.profile_pic || '/static/img/default-avatar.png'}"
+                     alt="${app.student}" class="profile-pic">
+                <div>
+                  <div class="font-medium">${app.student}</div>
+                  <div class="text-xs text-gray-500">${app.user_email}</div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">End Date</label>
-                    <input type="datetime-local" name="end_date" class="mt-1 p-2 w-full border rounded" required>
-                </div>
-                <button type="submit" class="bg-green-600 text-white p-2 rounded hover:bg-green-700">Set Timeline</button>
-            </form>
-            <h4 class="text-lg font-medium mt-4">Existing Timelines</h4>
-            <ul class="list-disc pl-5">
-                {% for timeline in timelines %}
-                    <li>{{ timeline.start_date|date:'F d, Y H:i' }} - {{ timeline.end_date|date:'F d, Y H:i' }}</li>
-                {% endfor %}
-            </ul>
-        </section>
-        <section>
-            <h3 class="text-xl font-semibold mb-2">Contest Applications</h3>
-            <table class="w-full border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="border p-2">User</th>
-                        <th class="border p-2">Position</th>
-                        <th class="border p-2">Submitted</th>
-                        <th class="border p-2">Status</th>
-                        <th class="border p-2">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for app in applications %}
-                        <tr>
-                            <td class="border p-2">{{ app.user.username }}</td>
-                            <td class="border p-2">{{ app.position }}</td>
-                            <td class="border p-2">{{ app.submitted_at|date:'F d, Y H:i' }}</td>
-                            <td class="border p-2">
-                                {% if app.approved %}Approved
-                                {% elif app.rejected %}Rejected (Reason: {{ app.rejection_reason }})
-                                {% else %}Pending{% endif %}
-                            </td>
-                            <td class="border p-2">
-                                {% if not app.approved and not app.rejected %}
-                                    <button class="bg-green-600 text-white p-1 rounded approve-btn" data-id="{{ app.id }}" data-action="approve">Approve</button>
-                                    <button class="bg-red-600 text-white p-1 rounded ml-2 reject-btn" data-id="{{ app.id }}" data-action="reject">Reject</button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </section>
-    </div>
-    <script>
-        document.querySelectorAll('.approve-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const id = button.getAttribute('data-id');
-                fetch('/officer/manage-application/', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'},
-                    body: `application_id=${id}&action=approve`
-                }).then(response => response.json()).then(data => {
-                    if (data.success) location.reload();
-                    else alert(data.message);
-                });
-            });
+              </div>
+            </td>
+            <td class="py-3 font-medium">${app.position}</td>
+            <td class="py-3 text-sm">${app.submitted_at}</td>
+            <td class="py-3">
+              <span class="status-badge px-2 py-1 text-xs rounded-full font-medium ${
+                app.approved ? 'bg-green-100 text-green-800' :
+                app.rejected ? 'bg-red-100 text-red-800' :
+                'bg-yellow-100 text-yellow-800'
+              }">
+                ${app.approved ? 'Approved' : app.rejected ? 'Rejected' : 'Pending'}
+              </span>
+            </td>
+            <td class="py-3 text-center">
+              ${app.result_file ? `<button onclick="viewDoc('${app.result_file}')" class="doc-btn result">Result</button>` : ''}
+              ${app.account_file ? `<button onclick="viewDoc('${app.account_file}')" class="doc-btn account">Account</button>` : ''}
+            </td>
+            <td class="py-3">
+              ${!app.approved && !app.rejected ? `
+  <button onclick="showActionModal(${app.id}, 'approve', '${app.student.replace(/'/g, "\\'")}')" 
+          class="btn-xs approve-btn">Approve</button>
+  <button onclick="showActionModal(${app.id}, 'reject', '${app.student.replace(/'/g, "\\'")}')" 
+          class="btn-xs reject-btn">Reject</button>
+` : '<span class="text-xs text-gray-400">Done</span>'}
+            </td>
+          </tr>
+        `).join('');
+      })
+      .catch(() => {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-500">Error loading data.</td></tr>';
+      });
+  }
+
+  window.viewDoc = (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+ window.showActionModal = (id, action, student) => {
+  pendingAction = { id, action };
+  document.getElementById('modal-title').textContent = 
+    action.charAt(0).toUpperCase() + action.slice(1) + ' Application';
+  document.getElementById('modal-message').innerHTML = 
+    `Are you sure you want to <strong>${action}</strong> this application for <strong>${student}</strong>? This action cannot be undone.`;
+
+  const btn = document.getElementById('confirm-action-btn');
+  btn.textContent = action.charAt(0).toUpperCase() + action.slice(1);
+  btn.className = action === 'approve'
+    ? 'px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors'
+    : 'px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors';
+
+  btn.onclick = () => {
+    closeActionModal();
+    performAction(id, action);
+  };
+
+  document.getElementById('action-modal').classList.remove('hidden');
+};
+window.closeActionModal = () => {
+  document.getElementById('action-modal').classList.add('hidden');
+  pendingAction = null;
+};
+  function performAction(id, action) {
+  // FIXED: Get CSRF from meta tag
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content 
+                    || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+  if (!csrfToken) {
+    alert('CSRF token missing!');
+    return;
+  }
+
+  const url = action === 'approve'
+    ? "{% url 'election_officer:approve_application' 0 %}".replace('0', id)
+    : "{% url 'election_officer:reject_application' 0 %}".replace('0', id);
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrfToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({}) // Optional: send data if needed
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      loadApplications();
+      closeActionModal();
+    } else {
+      alert('Error: ' + (d.message || 'Failed'));
+    }
+  })
+  .catch(err => {
+    console.error('Fetch error:', err);
+    alert('Network error. Please try again.');
+  });
+}
+
+  loadApplications();
+  setInterval(loadApplications, 15000);
+});
+</script>
+<script src="{% static 'functions.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Script loaded");
+
+    const modal = document.getElementById('student-modal');
+    const openBtn = document.getElementById('open-student-modal');
+    const closeBtn = document.getElementById('close-student-modal');
+    const searchInput = document.getElementById('student-search');
+    const deptFilter = document.getElementById('filter-dept');
+    const levelFilter = document.getElementById('filter-level');
+    const statusFilter = document.getElementById('filter-status');
+    const tableBody = document.getElementById('student-table-body');
+    const loading = document.getElementById('loading');
+    const tableContainer = document.getElementById('student-table-container');
+
+    let students = [];
+    let sortCol = 'name';
+    let sortDir = 'asc';
+
+    // OPEN MODAL
+    openBtn.onclick = function() {
+        console.log("Open clicked");
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        if (!students.length) fetchStudents();
+    };
+
+    // CLOSE MODAL
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    closeBtn.onclick = closeModal;
+    modal.onclick = function(e) {
+        if (e.target === modal || e.target.id === 'modal-backdrop') {
+            closeModal();
+        }
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            closeModal();
+        }
+    });
+
+    // FETCH
+    async function fetchStudents() {
+        loading.style.display = 'block';
+        tableContainer.style.display = 'none';
+
+        try {
+            const res = await fetch("{% url 'election_officer:get_students_api' %}");
+            if (!res.ok) throw new Error("Failed to fetch");
+            const data = await res.json();
+            students = data.students || [];
+
+            // Populate filters
+            const depts = [...new Set(students.map(s => s.dept))].filter(Boolean).sort();
+            const levels = [...new Set(students.map(s => s.level))].filter(Boolean).sort();
+
+            deptFilter.innerHTML = '<option value="">All Departments</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+            levelFilter.innerHTML = '<option value="">All Levels</option>' + levels.map(l => `<option value="${l}">${l}</option>`).join('');
+
+            render();
+        } catch (err) {
+            console.error(err);
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:red;">Failed to load students.</td></tr>`;
+        } finally {
+            loading.style.display = 'none';
+            tableContainer.style.display = 'block';
+        }
+    }
+
+    // RENDER
+    function render() {
+        let filtered = students.filter(s => {
+            const q = searchInput.value.toLowerCase();
+            return (
+                s.name.toLowerCase().includes(q) ||
+                s.matric.toLowerCase().includes(q) ||
+                s.dept.toLowerCase().includes(q)
+            ) && (!deptFilter.value || s.dept === deptFilter.value) &&
+               (!levelFilter.value || s.level === levelFilter.value) &&
+               (!statusFilter.value || s.status === statusFilter.value);
         });
 
-        document.querySelectorAll('.reject-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const id = button.getAttribute('data-id');
-                const reason = prompt('Enter rejection reason:');
-                if (reason) {
-                    fetch('/officer/manage-application/', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'},
-                        body: `application_id=${id}&action=reject&rejection_reason=${encodeURIComponent(reason)}`
-                    }).then(response => response.json()).then(data => {
-                        if (data.success) location.reload();
-                        else alert(data.message);
-                    });
-                }
-            });
+        filtered.sort((a, b) => {
+            let av = a[sortCol], bv = b[sortCol];
+            return (av > bv ? 1 : -1) * (sortDir === 'asc' ? 1 : -1);
         });
-    </script>
+
+        tableBody.innerHTML = filtered.map(s => {
+            const initials = s.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            const photoHtml = s.photo
+                ? `<img src="${s.photo}" alt="${s.name}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-green);">`
+                : `<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(to bottom right,var(--primary-green),var(--accent-emerald));color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;">${initials}</div>`;
+
+            return `
+                <tr style="border-bottom:1px solid #e5e7eb;">
+                    <td style="padding:14px 16px;display:flex;align-items:center;gap:12px;">
+                        ${photoHtml}
+                        <div>
+                            <div style="font-weight:600;color:#111;">${s.name}</div>
+                            <div style="font-size:12px;color:#666;">${s.matric}</div>
+                        </div>
+                    </td>
+                    <td style="padding:14px 16px;color:#444;">${s.matric}</td>
+                    <td style="padding:14px 16px;color:#444;">${s.dept}</td>
+                    <td style="padding:14px 16px;color:#444;">${s.level}</td>
+                    <td style="padding:14px 16px;">
+                        <span style="padding:5px 10px;border-radius:20px;font-size:12px;font-weight:500;background:${s.status==='Active'?'#d1fae5':'#f3f4f6'};color:${s.status==='Active'?'#065f46':'#6b7280'};">
+                            ${s.status}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('') || '<tr><td colspan="5" style="text-align:center;padding:40px;color:#666;">No students found.</td></tr>';
+    }
+
+    // Events
+    [searchInput, deptFilter, levelFilter, statusFilter].forEach(el => {
+        el.oninput = el.onchange = render;
+    });
+
+    document.querySelectorAll('[data-sort]').forEach(th => {
+        th.onclick = function() {
+            const col = this.dataset.sort;
+            sortDir = sortCol === col && sortDir === 'asc' ? 'desc' : 'asc';
+            sortCol = col;
+            render();
+        };
+    });
+});
+</script>
+<body>
+
+<input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+
+<!-- ==================== NAVBAR ==================== -->
+<header class="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <div class="logo">
+        <span class="logo-icon">N</span>
+        <span class="logo-text">NACOS Admin</span>
+      </div>
+      <nav class="nav-links">
+        <button data-page="home" class="nav-btn active">Home</button>
+        <button data-page="election" class="nav-btn">Election</button>
+        <button data-page="notifications" class="nav-btn">
+          Notifications <span id="notif-badge" class="badge">0</span>
+        </button>
+        
+        <button id="dark-mode-toggle" class="theme-btn" aria-label="Toggle dark mode">
+  <!-- Sun Icon (visible in dark mode) -->
+  <svg class="sun-icon hidden dark:inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 3v1m0 16v1m8.66-8.66h-1M4.34 12h-1m15.36-6.36l-.71.71M6.34 17.66l-.71.71m12.02 0l-.71-.71M6.34 6.34l-.71-.71M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+  </svg>
+
+  <!-- Moon Icon (visible in light mode) -->
+  <svg class="moon-icon inline dark:hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+  </svg>
+</button>
+        <a href="{% url 'election_officer:officer_logout' %}" class="btn-logout">Logout</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== MAIN ==================== -->
+<main class="main-content container">
+
+  <!-- ---------- HOME ---------- -->
+  <section id="page-home" class="page active">
+    <h2 class="section-title">Dashboard Overview</h2>
+    <!-- GREETING + COUNTDOWN CARD -->
+
+<div class="greeting-card">
+  <div class="greeting-text">
+    <h2 id="greeting-message" class="greeting-title"></h2>
+    <p class="greeting-user">Welcome back, <strong>{{ request.user.username }}</strong>!</p>
+  </div>
+  <div id="countdown-container" class="countdown-box">
+    <div class="countdown-label" style="color: rgb(213, 231, 178) !important;">Election Starts In</div>
+    <div id="countdown-timer" class="countdown-timer">—</div>
+  </div>
+</div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+    <!-- STUDENT AREA BUTTON -->
+<div class="stat-card">
+    <div class="stat-value">{{ stats.total_students }}</div>
+    <div class="stat-label">Total Students</div>
+</div>
+
+<button id="open-student-modal" style="
+    margin-top: 16px;
+    width: 100%;
+    padding: 14px 20px;
+    background: linear-gradient(to right, var(--primary-green), var(--accent-emerald));
+    color: rgb(92, 84, 84);
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+">
+   
+    Student Area
+</button>
+
+<!-- MODAL -->
+<div id="student-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;">
+    <!-- Backdrop -->
+    <div id="modal-backdrop" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);"></div>
+
+    <!-- Modal Box -->
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 1000px; max-height: 85vh; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
+        
+        <!-- Header -->
+        <div style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 24px; font-weight: bold; color: var(--primary-green); display: flex; align-items: center; gap: 12px;">
+                <span class="material-symbols-outlined" style="font-size: 28px;">school</span>
+                Student Area
+            </h2>
+            <button id="close-student-modal" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; transition: color 0.3s;">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <!-- Search & Filters -->
+        <div style="padding: 16px;">
+            <input type="text" id="student-search" placeholder="Search by name, matric, course..." 
+                   style="width: 100%; padding: 12px 16px; border: 1px solid #ccc; border-radius: 12px; font-size: 14px; margin-bottom: 12px; outline: none;">
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <select id="filter-dept" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                    <option value="">All Departments</option>
+                </select>
+                <select id="filter-level" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                    <option value="">All Levels</option>
+                </select>
+                <select id="filter-status" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                    <option value="">All Status</option>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" style="padding: 40px; text-align: center; color: #666; display: none;">
+            <span class="material-symbols-outlined" style="font-size: 48px; animation: spin 1s linear infinite;">refresh</span>
+            <p style="margin-top: 12px; font-size: 16px;">Loading students...</p>
+        </div>
+
+        <!-- Table -->
+        <div id="student-table-container" style="flex: 1; overflow: auto; display: none;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead style="background: #f8f9fa; position: sticky; top: 0; z-index: 10;">
+                    <tr>
+                        <th style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; cursor: pointer; user-select: none;" data-sort="name">Name</th>
+                        <th style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; cursor: pointer; user-select: none;" data-sort="matric">Matric No.</th>
+                        <th style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; cursor: pointer; user-select: none;" data-sort="dept">Dept</th>
+                        <th style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; cursor: pointer; user-select: none;" data-sort="level">Level</th>
+                        <th style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="student-table-body" style="background: white;"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.total_apps }}</div>
+        <div class="stat-label">Applications</div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-value">{{ stats.pending }}</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card approved">
+        <div class="stat-value">{{ stats.approved }}</div>
+        <div class="stat-label">Approved</div>
+      </div>
+    </div>
+
+    <!-- LEVELS + TIMELINE -->
+    <div class="info-grid">
+      <!-- Students by Level -->
+      <div class="info-card">
+        <h3 class="info-title">Students by Level</h3>
+        <div class="level-grid">
+          <div class="level-item">100L<br><strong>{{ stats.level_counts.100 }}</strong></div>
+          <div class="level-item">200L<br><strong>{{ stats.level_counts.200 }}</strong></div>
+          <div class="level-item">300L<br><strong>{{ stats.level_counts.300 }}</strong></div>
+          <div class="level-item">400L<br><strong>{{ stats.level_counts.400 }}</strong></div>
+          <div class="level-item">500L<br><strong>{{ stats.level_counts.500 }}</strong></div>
+        </div>
+      </div>
+
+      <!-- Current Timeline -->
+      <div class="info-card">
+  <h3 class="info-title">
+    Current Timeline
+    {% if timelines|length > 1 %}
+      <button onclick="openModal('all-timelines-modal')" class="view-all-btn">
+        View All ({{ timelines|length }})
+      </button>
+    {% endif %}
+  </h3>
+
+  {% if timelines %}
+    {% with latest=timelines|first %}
+      <div class="timeline-card">
+        <!-- Dates -->
+        <div class="tl-dates">
+          <div class="tl-date">
+            <svg class="icon"><use href="#icon-calendar"></use></svg>
+            <span class="date-text">{{ latest.start_date|date:"M d, Y" }}</span>
+          </div>
+          <span class="tl-arrow">→</span>
+          <div class="tl-date">
+            <span class="date-text">{{ latest.end_date|date:"M d, Y" }}</span>
+            <svg class="icon"><use href="#icon-clock"></use></svg>
+          </div>
+        </div>
+
+        <!-- Time + User -->
+        <div class="tl-meta">
+          <div class="tl-time">
+            <svg class="icon-sm"><use href="#icon-clock"></use></svg>
+            {{ latest.start_date|time:"h:i A" }} – {{ latest.end_date|time:"h:i A" }}
+          </div>
+          <div class="tl-user">
+            <svg class="icon-sm"><use href="#icon-user"></use></svg>
+            by <strong>{{ latest.created_by.username }}</strong>
+          </div>
+        </div>
+
+        <!-- Created At -->
+        <div class="tl-created">
+          <svg class="icon-xs"><use href="#icon-clock"></use></svg>
+          Added {{ latest.created_at|date:"M d \a\t h:i A" }}
+        </div>
+      </div>
+    {% endwith %}
+  {% else %}
+    <div class="tl-empty">
+      <svg class="icon-big"><use href="#icon-calendar"></use></svg>
+      <p>No timeline set yet.</p>
+    </div>
+  {% endif %}
+</div>
+  </section>
+
+  <!-- ---------- ELECTION ---------- -->
+  <section id="page-election" class="page">
+    <!-- Action Confirmation Modal -->
+
+
+    <div class="section-header">
+      <h2 class="section-title">Election Management</h2>
+      <div class="action-buttons">
+        <button onclick="openModal('time-modal')" class="btn-primary">Set Time</button>
+        <button onclick="openModal('position-modal')" class="btn-primary">Add Position</button>
+        <button onclick="refreshLiveView()" class="btn-primary">Refresh Live</button>
+      </div>
+    </div>
+
+<!-- Applications -->
+<div class="info-card" style="margin-bottom: 2rem; margin-top: 2rem;">
+  <h3 class="info-title">Contestant Applications</h3>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Position</th>
+          <th>Submitted</th>
+          <th>Status</th>
+          <th>Documents</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="apps-tbody">
+        <!-- Filled by JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+   <div class="info-card">
+    <div class="flex justify-between items-center mb-5">
+        
+        
+    </div>
+    <div id="live-view" class="space-y-6">
+        <div class="text-center py-8">
+            <div class="inline-flex items-center gap-2 text-gray-500">
+                <span class="material-symbols-outlined animate-spin">sync</span>
+                <span>Loading results...</span>
+            </div>
+        </div>
+    </div>
+</div>
+  </section>
+
+  <!-- ---------- NOTIFICATIONS ---------- -->
+  <section id="page-notifications" class="page">
+    <h2 class="section-title">Notifications</h2>
+    <div id="notif-list" class="notif-container"></div>
+  </section>
+</main>
+
+<!-- ==================== SVG ICONS (inline) ==================== -->
+<svg style="display:none;">
+  <symbol id="icon-calendar" viewBox="0 0 24 24">
+    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24">
+    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24">
+    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<!-- ==================== MODALS ==================== -->
+<!-- TIME MODAL -->
+<div id="time-modal" class="modal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Set Election Timeline</h3>
+      <button class="close-btn" onclick="closeModal('time-modal')">×</button> 
+    </div>
+    <form id="timeline-form-modal" class="modal-body">
+      <div id="timeline-msg" class="form-message" style="display:none; margin-top:1rem;"></div>
+      <div class="form-group">
+        <label>Start Date & Time</label>
+        <input type="datetime-local" name="start_date" required min="{% now 'Y-m-d\TH:i' %}">
+        <small>Must be in the future</small>
+      </div>
+      <div class="form-group">
+        <label>End Date & Time</label>
+        <input type="datetime-local" name="end_date" required>
+        <small>Must be after start time</small>
+      </div>
+      <button type="submit" class="btn-primary w-100">Save Timeline</button>
+      <!-- Inside #time-modal, inside the form, before </form> -->
+
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    let CSRF = csrfInput ? csrfInput.value : '';
+
+    window.deleteTimeline = function (timelineId, button) {
+      timelineId = parseInt(timelineId, 10);  // Ensure number
+      if (!confirm('Delete this timeline permanently?')) return;
+
+      const item = button.closest('.tl-item');
+      if (!item) return;
+
+      item.style.opacity = '0.5';
+      item.style.pointerEvents = 'none';
+
+      // FIXED: Append PK + trailing slash
+      let url = window.APP_URLS?.delete_timeline || '';
+      if (url && !url.endsWith('/')) url += '/';  // Ensure trailing slash on base
+      url += timelineId + '/';  // → /officer/timeline/delete/5/
+
+      console.log('Delete URL:', url);  // DEBUG: Check Network tab
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': CSRF,
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'  // Tells Django it's AJAX
+        },
+      })
+        .then(response => {
+          console.log('Response status:', response.status);  // DEBUG
+          if (!response.ok) {
+            return response.text().then(text => {
+              throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Response data:', data);  // DEBUG
+          if (data.success) {
+            item.remove();
+            updateViewAllCount();
+            if (typeof updateGreetingAndCountdown === 'function') {
+              updateGreetingAndCountdown();
+            }
+            alert('Timeline deleted successfully!');  // Optional success message
+          } else {
+            alert(data.message || 'Delete failed');
+            item.style.opacity = '1';
+            item.style.pointerEvents = 'auto';
+          }
+        })
+        .catch(err => {
+          console.error('Delete error:', err);
+          alert(`Delete failed: ${err.message}`);
+          item.style.opacity = '1';
+          item.style.pointerEvents = 'auto';
+        });
+    };
+
+    function updateViewAllCount() {
+      const btn = document.querySelector('.view-all-btn');
+      if (!btn) return;
+      const match = btn.textContent.match(/\((\d+)\)/);
+      if (match) {
+        let count = parseInt(match[1], 10) - 1;
+        if (count <= 1) {
+          btn.remove();
+        } else {
+          btn.textContent = `View All (${count})`;
+        }
+      }
+    }
+  });
+</script>
+
+<!-- URL placeholder – must be after APP_URLS is defined -->
+<!-- FIXED: Generate BASE URL properly -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Get the base URL correctly (remove trailing pk)
+    const fullDeleteUrl = "{% url 'election_officer:delete_timeline' 999 %}";  // e.g., /officer/timeline/delete/999/
+    const baseDeleteUrl = fullDeleteUrl.replace(/\/999\/?$/, '');  // → /officer/timeline/delete/
+    
+    window.APP_URLS = window.APP_URLS || {};
+    window.APP_URLS.delete_timeline = baseDeleteUrl; 
+    
+    console.log('Fixed Delete Base URL:', baseDeleteUrl); 
+  });
+</script>
+<div id="position-modal" class="modal">
+  <div id="top-message" class="pointer-events-none"></div>
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Create Position</h3>
+      <!-- + / – TOGGLE BUTTON -->
+      <div class="flex items-center gap-2">
+        <button id="toggle-position-form" class="icon-btn" title="Toggle form">
+          <svg id="add-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: white;">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <svg id="minus-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="hidden" style="color: white;">
+            <path d="M5 12h14"/>
+          </svg>
+        </button>
+        <button class="close-btn" onclick="closeModal('position-modal')">x</button>
+      </div>
+    </div>
+
+    <!-- MESSAGE CONTAINER (TOP OF FORM) -->
+    <div id="position-top-message" class="p-3 rounded-lg mb-3 hidden text-center font-medium">
+      <!-- Filled by JS -->
+    </div>
+    <!-- FORM (conditionally hidden) -->
+    <form id="position-form" class="modal-body" style="display:none;">
+      
+      <div id="position-msg" class="form-message" style="display:none; margin-top:1rem;"></div>
+      <div class="form-group">
+        <label>Position Name <span class="text-red-500">*</span></label>
+        <input type="text" name="name" placeholder="e.g., President" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3" placeholder="Role responsibilities..."></textarea>
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" class="btn-primary flex-1">Create</button>
+      </div>
+    </form>
+
+    <div class="modal-footer">
+      <h4 class="footer-title">Existing Positions</h4>
+      <div id="position-list" class="position-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION CONFIRMATION MODAL -->
+<div id="action-modal" class="hidden modal-overlay">
+  <div class="modal-content">
+    <h3 id="modal-title" class="modal-title"></h3>
+    <p id="modal-message" class="modal-message"></p>
+    <div class="flex justify-end space-x-3">
+      <button onclick="closeActionModal()" class=" btn-primary px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors">
+        Cancel
+      </button>
+      <button id="confirm-action-btn" class="btn-secondary" style="background: #e2e8f0; color: #475569; padding: 0.5rem 1.25rem; border-radius: 0.5rem;
+  font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 1rem;" >
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ALL TIMELINES MODAL -->
+<div id="all-timelines-modal" class="modal">
+  <div class="modal-dialog" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3>All Election Timelines</h3>
+      <button class="close-btn" onclick="closeModal('all-timelines-modal')">×</button>
+    </div>
+
+    <!-- SCROLLABLE BODY -->
+    <div class="modal-body" style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
+      <!-- DEBUG: Remove after testing -->
+      <p style="background:yellow; padding:5px;">
+        Delete URL: <code>{{ request.build_absolute_uri|slice:":-1" }}{% url 'election_officer:delete_timeline' 999 %}</code>
+      </p>
+      {% if timelines %}
+        <div class="tl-list">
+          {% for t in timelines %}
+            <div class="tl-item" style="position: relative; padding: 14px; margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa;">
+              
+              <!-- DELETE BUTTON (staff only) -->
+              {% if request.user.is_staff %}
+                <button
+                  class="delete-btn"
+                  onclick="deleteTimeline('{{ t.id }}', this)"
+                  style="
+                    position: absolute; top: 8px; right: 8px;
+                    background: #ef4444; color: white; border: none;
+                    width: 28px; height: 28px; border-radius: 6px;
+                    cursor: pointer; font-size: 12px;
+                  "
+                  title="Delete timeline">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-8 0h10m-9 4v10m6-10v10"/>
+                  </svg>
+                </button>
+              {% endif %}
+
+              <div class="tl-item-header">
+                <span class="tl-range">
+                  {{ t.start_date|date:"M d, Y h:i A" }} → {{ t.end_date|date:"M d, Y h:i A" }}
+                </span>
+                <span class="tl-counter">#{{ forloop.counter }}</span>
+              </div>
+              <div class="tl-item-meta">
+                by <strong>{{ t.created_by.username }}</strong> • {{ t.created_at|date:"M d, Y \a\t h:i A" }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-center">No timelines recorded.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<!-- TOP MESSAGE TOAST -->
+
+
+<style>
+#position-top-message {
+    min-width: 200px;
+    max-width: 90%;
+    transform-origin: center;
+}
+</style>
+<!-- ==================== JS ==================== -->
+
+
+
+
 </body>
 </html>

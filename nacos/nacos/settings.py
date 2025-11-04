@@ -46,14 +46,17 @@ INSTALLED_APPS = [
 
 
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',  # Must be before AuthenticationMiddleware
+    'django.contrib.sessions.middleware.SessionMiddleware', 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Must be after SessionMiddleware
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'nacos_app.middleware.VoteValidationMiddleware',
+    'nacos_app.middleware.ErrorHandlingMiddleware',
 ]
 
 
@@ -87,17 +90,30 @@ TEMPLATES = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/error.log',
+            'formatter': 'verbose',
+        },
         'console': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
+        'nacos_app': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
         },
     },
 }
@@ -138,43 +154,45 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-AUTH_USER_MODEL = 'nacos_app.CustomUser'  # Confirm this is correct
-LOGIN_URL = '/officer/login/'  # Already set, confirm it’s present
+AUTH_USER_MODEL = 'nacos_app.CustomUser'  
+LOGIN_URL = '/officer/login/'  
 AUTHENTICATION_BACKENDS = [
     'nacos_app.auth_backend.CustomUserBackend',
     'django.contrib.auth.backends.ModelBackend',
-    'election_officer.backends.CustomAuthBackend',  # Custom backend
-    'django.contrib.auth.backends.ModelBackend',   # Default backend
+    'election_officer.backends.CustomAuthBackend',  
+    'django.contrib.auth.backends.ModelBackend',   
 ]
     
 
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+
 
 USE_I18N = True
+TIME_ZONE = 'Africa/Lagos' 
+USE_TZ = True               
 
-USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'frontend' / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # Added for collectstatic
+STATIC_ROOT = BASE_DIR / 'staticfiles'  
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Expire session on browser close
+SESSION_COOKIE_AGE = 1209600 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True 
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = '/officer/login/'  
+
+
+X_FRAME_OPTIONS = 'SAMEORIGIN' 

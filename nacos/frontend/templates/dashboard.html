@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style type="text/tailwindcss">
         :root {
             --primary-green: #008000;
@@ -971,480 +972,575 @@
 </button>
                 <div id="user-menu" class="hidden absolute right-0 mt-2 w-40 sm:w-48 bg-white dark:bg-dark-surface rounded-lg shadow-lg py-2 z-20">
                     <a href="#" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">View Profile</a>
-                    <a href="{% url 'set_password' %}" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Change Password</a>
+                    <a href="{% url 'nacos_app:set_password' %}" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Change Password</a>
                     <a href="#" id="edit-profile-pic-menu" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Edit Profile Picture</a>
-                    <a href="{% url 'logout' %}" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Logout</a>
+                    <a href="{% url 'nacos_app:logout' %}" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Logout</a>
                     <a href="#" class="block px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-[var(--primary-green)] hover:text-white transition-colors">Settings</a>
                 </div>
             </div>
         </header>
 
-        <!-- Tabs (Centered on Desktop) -->
-        <nav class="tab-menu bg-white dark:bg-dark-surface shadow p-3 sm:p-4">
-            <ul class="flex flex-row space-x-2 sm:space-x-4 md:justify-center items-center max-w-4xl mx-auto">
-                <li class="tab-item">
-                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'home' %}active text-[var(--primary-green)]{% endif %}" data-tab="home" aria-controls="home" aria-selected="{% if active_tab == 'home' %}true{% else %}false{% endif %}">
-                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">home</span> Home
-                    </button>
-                </li>
-                <li class="tab-item">
-                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'finance' %}active text-[var(--primary-green)]{% endif %}" data-tab="finance" aria-controls="finance" aria-selected="{% if active_tab == 'finance' %}true{% else %}false{% endif %}">
-                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">account_balance</span> Finance
-                    </button>
-                </li>
-                <li class="tab-item">
-                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'elections' %}active text-[var(--primary-green)]{% endif %}" data-tab="elections" aria-controls="elections" aria-selected="{% if active_tab == 'elections' %}true{% else %}false{% endif %}">
-                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">how_to_vote</span> Elections
-                    </button>
-                </li>
-                <li class="tab-item">
-                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'lectures' %}active text-[var(--primary-green)]{% endif %}" data-tab="lectures" aria-controls="lectures" aria-selected="{% if active_tab == 'lectures' %}true{% else %}false{% endif %}">
-                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">live_tv</span> Live Lectures
-                    </button>
-                </li>
-                <li class="tab-item">
-                    <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'updates' %}active text-[var(--primary-green)]{% endif %}" data-tab="updates" aria-controls="updates" aria-selected="{% if active_tab == 'updates' %}true{% else %}false{% endif %}">
-                        <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">notifications</span> Updates
-                    </button>
-                </li>
-                <li class="tab-item hidden" id="more-tab">
-                    <button id="more-button" class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors" aria-label="More navigation options">
-                        <span class="material-symbols-outlined inline-block align-middle text-lg">more_horiz</span>
-                    </button>
-                    <div id="more-menu" class="more-menu hidden">
-                        <!-- Overflow tabs will be injected here -->
-                    </div>
-                </li>
-            </ul>
-        </nav>
+<!-- Tabs (Centered on Desktop) -->
+<nav class="tab-menu bg-white dark:bg-dark-surface shadow p-3 sm:p-4">
+    <ul class="flex flex-row space-x-2 sm:space-x-4 md:justify-center items-center max-w-4xl mx-auto">
+        <li class="tab-item">
+            <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'home' %}active text-[var(--primary-green)]{% endif %}" data-tab="home" aria-controls="home" aria-selected="{% if active_tab == 'home' %}true{% else %}false{% endif %}">
+                <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">home</span> Home
+            </button>
+        </li>
+        <li class="tab-item">
+            <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'finance' %}active text-[var(--primary-green)]{% endif %}" data-tab="finance" aria-controls="finance" aria-selected="{% if active_tab == 'finance' %}true{% else %}false{% endif %}">
+                <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">account_balance</span> Finance
+            </button>
+        </li>
+        <li class="tab-item">
+            <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'elections' %}active text-[var(--primary-green)]{% endif %}" data-tab="elections" aria-controls="elections" aria-selected="{% if active_tab == 'elections' %}true{% else %}false{% endif %}">
+                <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">how_to_vote</span> Elections
+            </button>
+        </li>
+        <li class="tab-item">
+            <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'lectures' %}active text-[var(--primary-green)]{% endif %}" data-tab="lectures" aria-controls="lectures" aria-selected="{% if active_tab == 'lectures' %}true{% else %}false{% endif %}">
+                <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">live_tv</span> Live Lectures
+            </button>
+        </li>
+        <li class="tab-item">
+            <button class="tab-button px-2 sm:px-4 py-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 hover:text-[var(--primary-green)] transition-colors {% if active_tab == 'updates' %}active text-[var(--primary-green)]{% endif %}" data-tab="updates" aria-controls="updates" aria-selected="{% if active_tab == 'updates' %}true{% else %}false{% endif %}">
+                <span class="material-symbols-outlined inline-block mr-1 sm:mr-2 align-middle text-lg">notifications</span> Updates
+            </button>
+        </li>
+        
+    </ul>
+</nav>
 
-        <!-- Messages -->
-        {% if messages %}
-            <div class="message-container max-w-4xl mx-auto mt-4 px-4">
-                {% for message in messages %}
-                    {% if forloop.first %}
-                        <div class="message bg-{% if message.tags == 'success' %}green-100{% else %}red-100{% endif %} border-l-4 border-{% if message.tags == 'success' %}green-500{% else %}red-500{% endif %} text-{% if message.tags == 'success' %}green-700{% else %}red-700{% endif %} p-3 sm:p-4 rounded-r-lg relative text-sm sm:text-base">
-                            {{ message }}
-                            <button type="button" class="message-close text-{% if message.tags == 'success' %}green-700{% else %}red-700{% endif %} hover:text-{% if message.tags == 'success' %}green-900{% else %}red-900{% endif %} text-lg" aria-label="Close message">&times;</button>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="message-container max-w-4xl mx-auto mt-4 px-4" style="display: none;"></div>
-        {% endif %}
+<!-- Messages -->
+{% if messages %}
+    <div class="message-container max-w-4xl mx-auto mt-4 px-4">
+        {% for message in messages %}
+            {% if forloop.first %}
+                <div class="message bg-{% if message.tags == 'success' %}green-100{% else %}red-100{% endif %} border-l-4 border-{% if message.tags == 'success' %}green-500{% else %}red-500{% endif %} text-{% if message.tags == 'success' %}green-700{% else %}red-700{% endif %} p-3 sm:p-4 rounded-r-lg relative text-sm sm:text-base">
+                    {{ message }}
+                    <button type="button" class="message-close text-{% if message.tags == 'success' %}green-700{% else %}red-700{% endif %} hover:text-{% if message.tags == 'success' %}green-900{% else %}red-900{% endif %} text-lg" aria-label="Close message">×</button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="message-container max-w-4xl mx-auto mt-4 px-4" style="display: none;"></div>
+{% endif %}
 
-        <!-- Tab Content -->
-        <main class="flex-1 p-4 sm:p-6 max-w-4xl mx-auto">
-            <div id="profile-pic-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-   <div class="glassmorphic rounded-xl p-6 w-full max-w-md sm:max-w-lg mx-4 bg-white/15 dark:bg-dark-surface/15 backdrop-blur-lg shadow-xl border border-white/10 transition-all duration-300">
-         <div class="flex justify-between items-center mb-4 little-screen">
-            <h3 class="text-lg sm:text-xl md:text-2xl font-bold flex items-center gap-2 bg-gradient-to-r from-[var(--primary-green)] to-[var(--accent-emerald)] bg-clip-text text-transparent drop-shadow-md">
-    <span class="material-symbols-outlined text-[var(--primary-green)] text-base sm:text-lg">edit</span>
-    Edit Profile Picture
-</h3>
-            <button id="close-modal-btn" class="flex items-center justify-center w-8 h-8 bg-red-500/10 text-gray-200 hover:bg-red-500/20 focus:outline-none focus:ring-2 focus:ring-[var(--primary-green)] rounded-full transition-all duration-200" aria-label="Close modal">
-            <span class="material-symbols-outlined text-xl">cancel</span>
-        </button>
-        </div>
-        <div class="mb-4">
-           <div id="image-preview-container" class="relative w-full h-64 bg-white/20 dark:bg-dark-surface/20 backdrop-blur-md rounded-xl shadow-lg overflow-hidden flex items-center justify-center transition-all duration-300">
-    <img id="image-preview" src="" alt="Preview" class="max-w-full max-h-full hidden object-cover rounded-lg">
-    <div id="no-image-state" class="flex flex-col items-center justify-center text-center space-y-2">
-        <span class="material-symbols-outlined text-[var(--primary-green)] text-4xl sm:text-5xl " id="span-hidden">photo_camera</span>
-        <p id="no-image-text" class="text-gray-300 dark:text-gray-400 text-sm sm:text-base font-medium">No image selected</p>
-        <button id="upload-image-prompt" class="px-4 py-2 bg-[var(--primary-green)]/70 text-white rounded-full text-sm sm:text-base font-semibold hover:bg-[var(--accent-emerald)] hover:shadow-md transition-all duration-200"></button>
-    </div>
-    
-</div>
-            <input type="file" id="profile-pic-input" accept="image/*" class="hidden">
-            <button id="select-image-btn" class="mt-3 w-full px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Select Image</button>
-        </div>
-        <div class="flex justify-end space-x-3">
-            <button id="crop-image-btn" class="px-4 py-2 text-sm bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Crop & Save</button>
-            <button id="cancel-crop-btn" class="px-4 py-2 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)]">Cancel</button>
-        </div>
-    </div>
-</div>
+<!-- Tab Content -->
+<main class="flex-1 p-4 sm:p-6 max-w-4xl mx-auto">
 
-            <div id="home" class="tab-content {% if active_tab == 'home' %}block{% else %}hidden{% endif %}">
-                <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Home</h2>
-                <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 mb-6 border-2 border-transparent gradient-bg">
-    <div class="flex items-center space-x-4 sm:space-x-6">
-        <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
-        <div class="relative flex-shrink-0">
-            <div class="profile-pic-container w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white dark:border-gray-700 shadow-md cursor-pointer hover:shadow-lg transition-all duration-300" style="aspect-ratio: 1/1;">
-                <img id="profile-picture" src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}" alt="Profile Picture" class="w-full h-full object-cover object-center" title="Edit Profile Picture">
-                <!-- Verified Badge -->
-                <span class="absolute top-0 right-0 bg-[var(--primary-green)] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center -mt-1 -mr-1 shadow-md">
-                    <span class="material-symbols-outlined text-[0.7rem]">star</span>
-                </span>
-            </div>
-            <span class="absolute bottom-0 right-0 bg-[var(--primary-green)] rounded-full p-1.5 cursor-pointer hover:bg-[var(--accent-emerald)] transition-all duration-300 profile-pic-edit-icon" id="edit-profile-pic-btn">
-                <span class="material-symbols-outlined text-white text-sm">edit</span>
-            </span>
-        </div>
-        <div class="flex-1 min-w-0 little-screen">
-            <h3 class="text-xl sm:text-2xl font-bold text-white drop-shadow-md break-words">Welcome, {{ user.surname }} {{ user.first_name }}</h3>
-            <p class="text-gray-100 text-sm sm:text-base mt-1 break-words">Your NACOS hub for membership, finance, and more.</p>
-        </div>
-    </div>
-</div>
-               
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4">
-                        <div class="flex items-center space-x-2">
-                            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">verified_user</span>
-                            <h4 class="text-base sm:text-lg font-medium">Membership Status</h4>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Active Member</p>
-                        <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">Last updated: {% now "F d, Y" %}</p>
-                    </div>
-                    <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4">
-                        <div class="flex items-center space-x-2">
-                            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">history</span>
-                            <h4 class="text-base sm:text-lg font-medium">Recent Activity</h4>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">No recent activity.</p>
-                        <button class="mt-3 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">View All</button>
-                    </div>
-                    <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4 sm:col-span-2 lg:col-span-1">
-                        <div class="flex items-center space-x-2">
-                            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">event</span>
-                            <h4 class="text-base sm:text-lg font-medium">Upcoming Events</h4>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">No events scheduled.</p>
-                        <button class="mt-3 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Explore Events</button>
-                    </div>
-                </div>
-            </div>
-            <div id="finance" class="tab-content {% if active_tab == 'finance' %}block{% else %}hidden{% endif %}">
-    <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Finance</h2>
-    <div class="max-w-6xl mx-auto md:p-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="card neumorphic rounded-xl p-6 gradient-border">
-                <div class="flex items-center space-x-3 mb-4">
-                    <span class="material-symbols-outlined text-3xl text-[var(--primary-green)]">account_balance_wallet</span>
-                    <h3 class="text-lg sm:text-xl font-semibold gradient-header">Account Balance</h3>
-                </div>
-                <p class="text-3xl sm:text-4xl font-bold mt-2">₦0.00</p>
-                <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">As of {% now "F d, Y" %}</p>
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Income</p>
-                        <p class="text-lg font-semibold text-[var(--primary-green)]">₦0.00</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Expenses</p>
-                        <p class="text-lg font-semibold text-[var(--primary-green)]">₦0.00</p>
-                    </div>
-                </div>
-                <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Add Funds</button>
-            </div>
-            <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-6">
-                <h3 class="text-lg sm:text-xl font-semibold mb-4 gradient-header">Transaction History</h3>
-                <table class="w-full text-sm sm:text-base divide-y dark:divide-gray-700">
-                    <thead>
-                        <tr class="text-left text-gray-600 dark:text-gray-400">
-                            <th class="py-3 sortable" data-sort="date">Date</th>
-                            <th class="py-3 sortable" data-sort="description">Description</th>
-                            <th class="py-3 sortable" data-sort="amount">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody style="color: black;">
-                        {% for i in "123" %}
-                        <tr class="table-row table-row-gradient" style="color: rgb(24, 34, 28);">
-                            <td class="py-3 flex items-center space-x-2">
-                                <span class="material-symbols-outlined text-lg text-[var(--primary-green)]">receipt_long</span>
-                                <span>{% now "F d, Y" %}</span>
-                            </td>
-                            <td class="py-3">Pending transaction...</td>
-                            <td class="py-3">₦0.00</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Load More</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="elections" class="tab-content {% if active_tab == 'elections' %}block{% else %}hidden{% endif %}">
-    <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Elections</h2>
-    <div class="max-w-6xl mx-auto md:p-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Upcoming Election Card (Kept As Is) -->
-             <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 gradient-border2">
-                <div class="flex items-center space-x-3 mb-4">
-                    <span class="material-symbols-outlined text-3xl text-[var(--light-gray)]">how_to_vote</span>
-                    <h3 class="text-lg sm:text-xl font-semibold gradient-header" style="color: #ffffff;">Upcoming Election</h3>
-                    <span class="text-xs bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full">Upcoming</span>
-                </div>
-                <p style="color: var(--light-gray);" class="text-gray-600 text-sm mt-2">No elections scheduled.</p>
-                <div style="color: burlywood;" class="mt-3 text-sm text-gray-500">Starts in: <span>TBD</span></div>
-                <div class="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div class="progress-bar w-1/3"></div>
-                </div>
-                <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Vote Now</button>
-            </div>
-
-           <!-- Contest Invitation Card -->
-<div class="contest-invitation-card bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200 transition-transform duration-300 hover:shadow-xl hover:scale-[1.02]">
-    <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-green-600 text-xl">star</span>
-            <span class="text-xs bg-green-100 text-green-800 font-semibold px-2 py-1 rounded-full">New Feature</span>
-        </div>
-        <div class="flex items-center gap-2 text-green-600">
-            <span class="material-symbols-outlined">check_circle</span>
-            <span class="text-sm font-medium">You are eligible</span>
-        </div>
-    </div>
-    <div class="text-center md:text-left">
-        <h3 class="text-xl font-bold text-gray-900 mb-2">Make a Change, Lead the Way!</h3>
-        <p class="text-gray-600 text-sm mb-4">Step up and shape the future of NACOS. Your leadership matters.</p>
-    </div>
-    <div class="flex flex-col md:flex-row justify-center md:justify-start items-center gap-4">
-        <button id="contest-now-btn" class="px-6 py-2 bg-green-600 text-white rounded-full text-sm font-semibold hover:bg-green-700 hover:shadow-md transition-all duration-200 flex items-center gap-2 w-full md:w-auto">
-            <span class="material-symbols-outlined">person_add</span> Contest Now
-        </button>
-    </div>
-</div>
-
-            <!-- Candidates Section -->
-            <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg sm:text-xl font-semibold gradient-header">Candidates</h3>
-                    <select class="filter-select bg-white rounded-md px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-200">
-                        <option>Filter by Position</option>
-                        <option>President</option>
-                        <option>Secretary</option>
-                    </select>
-                </div>
-                <table class="w-full text-sm sm:text-base divide-y dark:divide-gray-700">
-                    <thead>
-                        <tr class="text-left text-gray-600 dark:text-gray-400">
-                            <th class="py-3 sortable" data-sort="name">Name</th>
-                            <th class="py-3 sortable" data-sort="position">Position</th>
-                            <th class="py-3 sortable" data-sort="status">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for i in "12" %}
-                        <tr class="table-row table-row-gradient" style="color: var(--primary-green);">
-                            <td class="py-3 flex items-center space-x-2">
-                                <span class="material-symbols-outlined text-lg text-[var(--primary-green)] hover:scale-125 transition-transform">person</span>
-                                <span>Pending candidate...</span>
-                            </td>
-                            <td class="py-3">-</td>
-                            <td class="py-3">N/A</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-<!-- Contest Modal -->
-    <div id="contest-modal" class="fixed inset-0 bg-gray-900/60 hidden flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="bg-white_90 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl transform transition-all duration-300 ease-out scale-95 opacity-0 overflow-hidden"> <div class="flex justify-between items-center mb-4 relative">
-                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-green-600">how_to_vote</span> Contest for Position
+    <!-- Profile Picture Modal (Fixed: was inside <main> but hidden) -->
+    <div id="profile-pic-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="glassmorphic rounded-xl p-6 w-full max-w-md sm:max-w-lg mx-4 bg-white/15 dark:bg-dark-surface/15 backdrop-blur-lg shadow-xl border border-white/10 transition-all duration-300">
+            <div class="flex justify-between items-center mb-4 little-screen">
+                <h3 class="text-lg sm:text-xl md:text-2xl font-bold flex items-center gap-2 bg-gradient-to-r from-[var(--primary-green)] to-[var(--accent-emerald)] bg-clip-text text-transparent drop-shadow-md">
+                    <span class="material-symbols-outlined text-[var(--primary-green)] text-base sm:text-lg">edit</span>
+                    Edit Profile Picture
                 </h3>
-                <button id="close-contest-modal" class="flex items-center justify-center w-10 h-10 bg-gray-100/80 text-gray-600 hover:bg-red-100/80 rounded-full transition-all duration-200 group" aria-label="Close" data-tooltip="Close Modal">
-                    <span class="material-symbols-outlined text-2xl group-hover:text-red-500">close</span>
+                <button id="close-modal-btn" class="flex items-center justify-center w-8 h-8 bg-red-500/10 text-gray-200 hover:bg-red-500/20 focus:outline-none focus:ring-2 focus:ring-[var(--primary-green)] rounded-full transition-all duration-200" aria-label="Close modal">
+                    <span class="material-symbols-outlined text-xl">cancel</span>
                 </button>
             </div>
-            <div class="flex items-center mb-6 relative">
-                <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center mr-2 data-[active]:ring-2 data-[active]:ring-green-500 transition-all duration-300" data-step="1">1</div>
-                <div class="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center mr-2 data-[active]:ring-2 data-[active]:ring-green-500 transition-all duration-300" data-step="2">2</div>
-                <svg class="w-6 h-6 ml-2 text-gray-400">
-                    <circle cx="12" cy="12" r="10" fill="none" stroke="#e5e7eb" stroke-width="2"></circle>
-                    <circle cx="12" cy="12" r="10" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="62.8" stroke-dashoffset="31.4" id="progress-circle" class="transition-all duration-300"></circle>
-                </svg>
-            </div>
-            <div class="max-h-[calc(80vh-140px)] overflow-y-auto space-y-6 pr-2">
-                <div id="step-1" data-state="active">
-                    <div>
-                        <p id="inline-message"></p>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1" data-tooltip="Write a short manifesto (max 200 characters)">
-                            <span class="material-symbols-outlined text-gray-400 text-base">description</span> Brief Manifesto
-                        </label>
-                        <textarea id="manifesto-input" rows="4" maxlength="200" class="w-full bg-gray-50/90 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-200 resize-none placeholder-gray-400" placeholder="Share your vision..."></textarea>
-                        <p id="char-count" class="text-xs text-gray-500 mt-1">0/200</p>
+            <div class="mb-4">
+                <div id="image-preview-container" class="relative w-full h-64 bg-white/20 dark:bg-dark-surface/20 backdrop-blur-md rounded-xl shadow-lg overflow-hidden flex items-center justify-center transition-all duration-300">
+                    <img id="image-preview" src="" alt="Preview" class="max-w-full max-h-full hidden object-cover rounded-lg">
+                    <div id="no-image-state" class="flex flex-col items-center justify-center text-center space-y-2">
+                        <span class="material-symbols-outlined text-[var(--primary-green)] text-4xl sm:text-5xl" id="span-hidden">photo_camera</span>
+                        <p id="no-image-text" class="text-gray-300 dark:text-gray-400 text-sm sm:text-base font-medium">No image selected</p>
+                        <button id="upload-image-prompt" class="px-4 py-2 bg-[var(--primary-green)]/70 text-white rounded-full text-sm sm:text-base font-semibold hover:bg-[var(--accent-emerald)] hover:shadow-md transition-all duration-200"></button>
                     </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1" data-tooltip="Select one position to contest">
-                            <span class="material-symbols-outlined text-gray-400 text-base">person_pin</span> Pick a Position
-                        </label>
-                        <div id="position-options" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-1 max-h-36 overflow-y-auto">
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="president" data-tooltip="Lead the organization">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">star</span>
-                                <p class="text-xs text-gray-700">President</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="vice_president" data-tooltip="Support the President">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">person_outline</span>
-                                <p class="text-xs text-gray-700">Vice Pres.</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="secretary" data-tooltip="Manage records">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">edit_note</span>
-                                <p class="text-xs text-gray-700">Secretary</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="treasurer" data-tooltip="Handle finances">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">account_balance_wallet</span>
-                                <p class="text-xs text-gray-700">Treasurer</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="director1" data-tooltip="Direct team activities">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">people</span>
-                                <p class="text-xs text-gray-700">Dir. 1</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="director2" data-tooltip="Direct team activities">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">people</span>
-                                <p class="text-xs text-gray-700">Dir. 2</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="director3" data-tooltip="Direct team activities">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">people</span>
-                                <p class="text-xs text-gray-700">Dir. 3</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="director4" data-tooltip="Direct team activities">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">people</span>
-                                <p class="text-xs text-gray-700">Dir. 4</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="director5" data-tooltip="Direct team activities">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">people</span>
-                                <p class="text-xs text-gray-700">Dir. 5</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="director6" data-tooltip="Direct team activities">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">people</span>
-                                <p class="text-xs text-gray-700">Dir. 6</p>
-                            </div>
-                            <div class="position-option bg-gray-50/90 border border-gray-300 rounded-lg p-1 text-center hover:bg-green-50/90 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center h-12 group" data-value="director7" data-tooltip="Direct team activities">
-                                <span class="material-symbols-outlined text-green-600 text-lg group-hover:text-green-700 transition-colors">people</span>
-                                <p class="text-xs text-gray-700">Dir. 7</p>
-                            </div>
+                </div>
+                <input type="file" id="profile-pic-input" accept="image/*" class="hidden">
+                <button id="select-image-btn" class="mt-3 w-full px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Select Image</button>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button id="crop-image-btn" class="px-4 py-2 text-sm bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Crop & Save</button>
+                <button id="cancel-crop-btn" class="px-4 py-2 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)]">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOME -->
+    <div id="home" class="tab-content {% if active_tab == 'home' %}block{% else %}hidden{% endif %}">
+        <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Home</h2>
+        <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 mb-6 border-2 border-transparent gradient-bg">
+            <div class="flex items-center space-x-4 sm:space-x-6">
+                <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+                <div class="relative flex-shrink-0">
+                    <div class="profile-pic-container w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white dark:border-gray-700 shadow-md cursor-pointer hover:shadow-lg transition-all duration-300" style="aspect-ratio: 1/1;">
+                        <img id="profile-picture" src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}" alt="Profile Picture" class="w-full h-full object-cover object-center" title="Edit Profile Picture">
+                        <span class="absolute top-0 right-0 bg-[var(--primary-green)] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center -mt-1 -mr-1 shadow-md">
+                            <span class="material-symbols-outlined text-[0.7rem]">star</span>
+                        </span>
+                    </div>
+                    <span class="absolute bottom-0 right-0 bg-[var(--primary-green)] rounded-full p-1.5 cursor-pointer hover:bg-[var(--accent-emerald)] transition-all duration-300 profile-pic-edit-icon" id="edit-profile-pic-btn">
+                        <span class="material-symbols-outlined text-white text-sm">edit</span>
+                    </span>
+                </div>
+                <div class="flex-1 min-w-0 little-screen">
+                    <h3 class="text-xl sm:text-2xl font-bold text-white drop-shadow-md break-words">Welcome, {{ user.surname }} {{ user.first_name }}</h3>
+                    <p class="text-gray-100 text-sm sm:text-base mt-1 break-words">Your NACOS hub for membership, finance, and more.</p>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4">
+                <div class="flex items-center space-x-2">
+                    <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">verified_user</span>
+                    <h4 class="text-base sm:text-lg font-medium">Membership Status</h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Active Member</p>
+                <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">Last updated: {% now "F d, Y" %}</p>
+            </div>
+            
+            <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4">
+                <div class="flex items-center space-x-2">
+                    <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">history</span>
+                    <h4 class="text-base sm:text-lg font-medium">Recent Activity</h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">No recent activity.</p>
+                <button class="mt-3 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">View All</button>
+            </div>
+            <div id="live-results-container" class="space-y-6">
+    <!-- JS fills this -->
+</div>
+            <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4 sm:col-span-2 lg:col-span-1">
+                <div class="flex items-center space-x-2">
+                    <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">event</span>
+                    <h4 class="text-base sm:text-lg font-medium">Upcoming Events</h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">No events scheduled.</p>
+                <button class="mt-3 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Explore Events</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FINANCE -->
+    <div id="finance" class="tab-content {% if active_tab == 'finance' %}block{% else %}hidden{% endif %}">
+        <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Finance</h2>
+        <div class="max-w-6xl mx-auto md:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card neumorphic rounded-xl p-6 gradient-border">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="material-symbols-outlined text-3xl text-[var(--primary-green)]">account_balance_wallet</span>
+                        <h3 class="text-lg sm:text-xl font-semibold gradient-header">Account Balance</h3>
+                    </div>
+                    <p class="text-3xl sm:text-4xl font-bold mt-2">₦0.00</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">As of {% now "F d, Y" %}</p>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Income</p>
+                            <p class="text-lg font-semibold text-[var(--primary-green)]">₦0.00</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Expenses</p>
+                            <p class="text-lg font-semibold text-[var(--primary-green)]">₦0.00</p>
                         </div>
                     </div>
-                    <button style="background-color: #008000;" id="next-btn" class=" button-small w-full mt-4 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2 data-[disabled]:bg-gray-400 data-[disabled]:cursor-not-allowed" data-disabled>
-                        <span class="material-symbols-outlined">arrow_forward</span> Next
+                    <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Add Funds</button>
+                </div>
+                <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-6">
+                    <h3 class="text-lg sm:text-xl font-semibold mb-4 gradient-header">Transaction History</h3>
+                    <table class="w-full text-sm sm:text-base divide-y dark:divide-gray-700">
+                        <thead>
+                            <tr class="text-left text-gray-600 dark:text-gray-400">
+                                <th class="py-3 sortable" data-sort="date">Date</th>
+                                <th class="py-3 sortable" data-sort="description">Description</th>
+                                <th class="py-3 sortable" data-sort="amount">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody style="color: black;">
+                            {% for i in "123" %}
+                            <tr class="table-row table-row-gradient" style="color: rgb(24, 34, 28);">
+                                <td class="py-3 flex items-center space-x-2">
+                                    <span class="material-symbols-outlined text-lg text-[var(--primary-green)]">receipt_long</span>
+                                    <span>{% now "F d, Y" %}</span>
+                                </td>
+                                <td class="py-3">Pending transaction...</td>
+                                <td class="py-3">₦0.00</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Load More</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ELECTIONS -->
+    <div id="elections" class="tab-content {% if active_tab == 'elections' %}block{% else %}hidden{% endif %}">
+        <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Elections</h2>
+        <div class="max-w-6xl mx-auto md:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Upcoming Election Card -->
+   <div class="card bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-xl p-6 text-white">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-3">
+            <span class="material-symbols-outlined text-3xl">how_to_vote</span>
+            <h3 class="text-lg sm:text-xl font-bold">Upcoming Election</h3>
+        </div>
+        <span id="election-status-badge" class="text-xs bg-white text-green-700 px-3 py-1 rounded-full font-medium">Loading...</span>
+    </div>
+
+    <div id="election-info" class="mb-3">
+        <p class="text-white/80 text-sm">Fetching timeline...</p>
+    </div>
+
+    <div id="countdown-display" class="mb-4 text-center">
+        <!-- Filled by JS -->
+    </div>
+
+    <div class="mt-3 w-full bg-white/20 rounded-full h-2">
+        <div id="progress-bar" class="progress-bar h-full rounded-full transition-all duration-1000"></div>
+    </div>
+
+    <button id="vote-button" class="mt-4 w-full px-4 py-2.5 text-sm font-semibold bg-white text-green-700 rounded-md shadow-md hover:shadow-lg transition-all">
+        Loading...
+    </button>
+</div>
+                <!-- Contest Invitation Card -->
+                <div class="contest-invitation-card bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200 transition-transform duration-300 hover:shadow-xl hover:scale-[1.02]">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-green-600 text-xl">star</span>
+                            <span class="text-xs bg-green-100 text-green-800 font-semibold px-2 py-1 rounded-full">New Feature</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-green-600">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <span class="text-sm font-medium">You are eligible</span>
+                        </div>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Make a Change, Lead the Way!</h3>
+                        <p class="text-gray-600 text-sm mb-4">Step up and shape the future of NACOS. Your leadership matters.</p>
+                    </div>
+                    <div class="flex flex-col md:flex-row justify-center md:justify-start items-center gap-4">
+                        <button id="contest-now-btn" class="px-6 py-2 bg-green-600 text-white rounded-full text-sm font-semibold hover:bg-green-700 hover:shadow-md transition-all duration-200 flex items-center gap-2 w-full md:w-auto">
+                            <span class="material-symbols-outlined">person_add</span> Contest Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Candidates Section -->
+                
+                    
+                    <!-- Candidates Section -->
+<div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg sm:text-xl font-semibold gradient-header">Approved Candidates</h3>
+        <select class="filter-select bg-white rounded-md px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-200">
+            <option value="">All Positions</option>
+            {% for pos in positions %}
+                <option value="{{ pos.name }}">{{ pos.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm sm:text-base divide-y dark:divide-gray-700">
+            <thead>
+                <tr class="text-left text-gray-600 dark:text-gray-400">
+                    <th class="py-3">Candidate</th>
+                    <th class="py-3">Position</th>
+                    <th class="py-3">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in approved_candidates %}
+                <tr class="table-row hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <td class="py-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-[var(--primary-green)] shadow-sm">
+                                {% if app.user.profile_picture %}
+                                    <img src="{{ app.user.profile_picture.url }}" alt="{{ app.user.get_full_name }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full bg-gradient-to-br from-[var(--primary-green)] to-[var(--accent-emerald)] flex items-center justify-center text-white font-bold text-lg">
+                                        {{ app.user.first_name|slice:":1" }}{{ app.user.surname|slice:":1" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">
+                                    {{ app.user.get_full_name|default:app.user.username }}
+                                </p>
+                                <p class="text-xs text-gray-500">NACOS ID: {{ app.user.username }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 font-medium text-[var(--primary-green)]">
+                        {{ app.position.name }}
+                    </td>
+                    <td class="py-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            <span class="w-2 h-2 mr-1 rounded-full bg-green-600"></span>
+                            Approved
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="py-8 text-center text-gray-500 dark:text-gray-400">
+                        <span class="material-symbols-outlined text-4xl mb-2 block">person_off</span>
+                        <p>No approved candidates yet.</p>
+                        <p class="text-sm">Check back after admin review.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+                </div>
+            </div>
+        
+
+        <!-- Contest Modal -->
+        <div id="contest-modal" class="fixed inset-0 bg-gray-900/60 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+            <div class="bg-white_90 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl transform transition-all duration-300 ease-out scale-95 opacity-0 overflow-hidden">
+                <div class="flex justify-between items-center mb-4 relative">
+                    <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-600">how_to_vote</span> Contest for Position
+                    </h3>
+                    <button id="close-contest-modal" class="flex items-center justify-center w-10 h-10 bg-gray-100/80 text-gray-600 hover:bg-red-100/80 rounded-full transition-all duration-200 group" aria-label="Close" data-tooltip="Close Modal">
+                        <span class="material-symbols-outlined text-2xl group-hover:text-red-500">close</span>
                     </button>
                 </div>
-                <div id="step-2" data-state="inactive" class="hidden">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1" data-tooltip="Upload required documents in PDF format">
-                            <span class="material-symbols-outlined text-gray-400 text-base">upload</span> Upload Relevant Documents
-                        </label>
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-2 group" data-tooltip="Upload your academic result">
-                                <input type="file" id="result-pdf" accept="application/pdf" class="hidden">
-                                <button id="upload-result-btn" class=" button-small px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold hover:bg-green-700 hover:shadow-md transition-all duration-200 flex items-center gap-2">
-                                    <span class="material-symbols-outlined">upload_file</span> Statement of Result
-                                </button>
-                                <span id="result-filename" class="button-small text-sm text-gray-500">No file selected</span>
-                            </div>
-                            <div class="flex items-center gap-2 group" data-tooltip="Upload your financial statement">
-                                <input type="file" id="account-pdf" accept="application/pdf" class="hidden">
-                                <button id="upload-account-btn" class=" button-small px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold hover:bg-green-700 hover:shadow-md transition-all duration-200 flex items-center gap-2">
-                                    <span class="material-symbols-outlined">upload_file</span> Account Statement
-                                </button>
-                                <span id="account-filename" class=" button-small text-sm text-gray-500">No file selected</span>
-                            </div>
-                        </div>
-                        <div id="pdf-viewer" class="mt-4 overflow-hidden">
-                            <iframe id="pdf-frame" class="w-full border border-gray-200 rounded-md" style="aspect-ratio: 4 / 3;" src="" title="Document Preview"></iframe>
-                        </div>
+                <!-- Already Submitted State -->
+                <div id="already-submitted" class="hidden flex flex-col items-center justify-center py-12 px-6 text-center">
+                    <div class="relative">
+                        <div class="bubble bubble-1"></div>
+                        <div class="bubble bubble-2"></div>
+                        <div class="bubble bubble-3"></div>
+                        <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">Congratulations!</h2>
                     </div>
-                    <div class="flex justify-between gap-4 mt-4">
-                        <button style="background-color: var(--primary-green);" id="back-btn" class="button-small px-4 py-2 bg-gray-500 text-white rounded-lg text-sm font-semibold hover:bg-gray-600 transition-all duration-200 flex items-center gap-2">
-                            <span class="material-symbols-outlined">arrow_back</span> Back
+                    <p class="text-lg text-gray-700 dark:text-gray-300">
+                        You have already submitted your application.<br>
+                        It is currently <strong>awaiting approval</strong>.
+                    </p>
+                    <button id="close-already-submitted" class="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
+                        Close
+                    </button>
+                </div>
+                <!-- Steps -->
+                <div class="flex items-center mb-6 relative">
+                    <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center mr-2 data-[active]:ring-2 data-[active]:ring-green-500 transition-all duration-300" data-step="1">1</div>
+                    <div class="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center mr-2 data-[active]:ring-2 data-[active]:ring-green-500 transition-all duration-300" data-step="2">2</div>
+                    <svg class="w-6 h-6 ml-2 text-gray-400">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="#e5e7eb" stroke-width="2"></circle>
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="62.8" stroke-dashoffset="31.4" id="progress-circle" class="transition-all duration-300"></circle>
+                    </svg>
+                </div>
+                <div class="max-h-[calc(80vh-140px)] overflow-y-auto space-y-6 pr-2">
+                    <!-- Step 1 -->
+                    <div id="step-1" data-state="active">
+                        <div>
+                            <p id="inline-message"></p>
+                            {% csrf_token %}
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1" data-tooltip="Write a short manifesto (max 200 characters)">
+                                <span class="material-symbols-outlined text-gray-400 text-base">description</span> Brief Manifesto
+                            </label>
+                            <textarea id="manifesto-input" rows="4" maxlength="200" class="w-full bg-gray-50/90 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-200 resize-none placeholder-gray-400" placeholder="Share your vision..."></textarea>
+                            <p id="char-count" class="text-xs text-gray-500 mt-1">0/200</p>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1" data-tooltip="Select one position to contest">
+                                <span class="material-symbols-outlined text-gray-400 text-base">person_pin</span> Pick a Position
+                            </label>
+                            <div class="grid grid-cols-2 gap-3 mb-6" id="positions-container">
+                                <p class="col-span-2 text-sm text-gray-500">Loading positions...</p>
+                            </div>
+                        </div>
+                        <button id="next-btn" class="w-full mt-4 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2 data-[disabled]:bg-gray-400 data-[disabled]:cursor-not-allowed" data-disabled>
+                            <span class="material-symbols-outlined">arrow_forward</span> Next
                         </button>
-                        <button  id="exit-btn" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition-all duration-200 flex items-center gap-2 hidden">
-                            
-                        </button>
-                        <button style="background-color: var(--primary-green);" id="submit-contest" class="button-small px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-all duration-200 flex items-center gap-2 data-[disabled]:bg-gray-400 data-[disabled]:cursor-not-allowed" data-disabled>
-                            <span class="material-symbols-outlined">check_circle</span> Submit
-                        </button>
+                    </div>
+                    <!-- Step 2 -->
+                    <div id="step-2" data-state="inactive" class="hidden">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1" data-tooltip="Upload required documents in PDF format">
+                                <span class="material-symbols-outlined text-gray-400 text-base">upload</span> Upload Relevant Documents
+                            </label>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-2 group" data-tooltip="Upload your academic result">
+                                    <input type="file" id="result-pdf" accept="application/pdf" class="hidden">
+                                    <button id="upload-result-btn" class="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold hover:bg-green-700 hover:shadow-md transition-all duration-200 flex items-center gap-2">
+                                        <span class="material-symbols-outlined">upload_file</span> Statement of Result
+                                    </button>
+                                    <span id="result-filename" class="text-sm text-gray-500">No file selected</span>
+                                </div>
+                                <div class="flex items-center gap-2 group" data-tooltip="Upload your financial statement">
+                                    <input type="file" id="account-pdf" accept="application/pdf" class="hidden">
+                                    <button id="upload-account-btn" class="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold hover:bg-green-700 hover:shadow-md transition-all duration-200 flex items-center gap-2">
+                                        <span class="material-symbols-outlined">upload_file</span> Account Statement
+                                    </button>
+                                    <span id="account-filename" class="text-sm text-gray-500">No file selected</span>
+                                </div>
+                            </div>
+                            <div id="pdf-viewer" class="mt-4 overflow-hidden">
+                                <iframe id="pdf-frame" class="w-full border border-gray-200 rounded-md" style="aspect-ratio: 4 / 3;" src="" title="Document Preview"></iframe>
+                            </div>
+                        </div>
+                        <div class="flex justify-between gap-4 mt-4">
+                            <button id="back-btn" class="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm font-semibold hover:bg-gray-600 transition-all duration-200 flex items-center gap-2">
+                                <span class="material-symbols-outlined">arrow_back</span> Back
+                            </button>
+                            <button id="exit-btn" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition-all duration-200 flex items-center gap-2 hidden"></button>
+                            <button id="submit-contest" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-all duration-200 flex items-center gap-2 data-[disabled]:bg-gray-400 data-[disabled]:cursor-not-allowed" data-disabled>
+                                <span class="material-symbols-outlined">check_circle</span> Submit
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-<div id="lectures" class="tab-content {% if active_tab == 'lectures' %}block{% else %}hidden{% endif %}">
-    <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Live Lectures</h2>
-    <div class="max-w-6xl mx-auto md:p-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="card glassmorphic rounded-xl p-6 flip-card">
-                <div class="flip-card-inner">
-                    <div class="flip-card-front">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <span class="material-symbols-outlined text-3xl text-[var(--primary-green)]">play_circle</span>
-                            <h3 class="text-lg sm:text-xl font-semibold gradient-header">Next Lecture</h3>
+
+    <!-- LECTURES -->
+    <div id="lectures" class="tab-content {% if active_tab == 'lectures' %}block{% else %}hidden{% endif %}">
+        <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Live Lectures</h2>
+        <div class="max-w-6xl mx-auto md:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card glassmorphic rounded-xl p-6 flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <span class="material-symbols-outlined text-3xl text-[var(--primary-green)]">play_circle</span>
+                                <h3 class="text-lg sm:text-xl font-semibold gradient-header">Next Lecture</h3>
+                            </div>
+                            <div class="relative aspect-video rounded-md overflow-hidden">
+                                <iframe class="w-full h-full" src="https://www.youtube.com/embed/zOjov-2OZ0E" title="Lecture Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                <span class="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full">Live</span>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Introduction to AI - Dr. John Doe</p>
+                            <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">Starts in: <span>2h 30m</span></div>
+                            <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Join Now</button>
                         </div>
-                        <div class="relative aspect-video rounded-md overflow-hidden">
-                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/zOjov-2OZ0E" title="Lecture Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            <span class="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full">Live</span>
+                        <div class="flip-card-back glassmorphic rounded-xl p-6">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Lecture Details: Learn AI fundamentals from Dr. John Doe. Covers machine learning basics and practical applications.</p>
+                            <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Back</button>
                         </div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Introduction to AI - Dr. John Doe</p>
-                        <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">Starts in: <span>2h 30m</span></div>
-                        <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Join Now</button>
                     </div>
-                    <div class="flip-card-back glassmorphic rounded-xl p-6">
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Lecture Details: Learn AI fundamentals from Dr. John Doe. Covers machine learning basics and practical applications.</p>
-                        <button class="mt-4 px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md pulse-button">Back</button>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg sm:text-xl font-semibold gradient-header">Lecture Schedule</h3>
+                        <select class="filter-select">
+                            <option>Filter by Topic</option>
+                            <option>Technology</option>
+                            <option>Leadership</option>
+                            <option>Data Science</option>
+                        </select>
+                    </div>
+                    <div class="carousel">
+                        {% for i in "123" %}
+                        <div class="carousel-item card glassmorphic rounded-xl p-4">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="material-symbols-outlined text-lg text-[var(--primary-green)]">event</span>
+                                <h4 class="text-base font-medium">Lecture {{ i }}</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Speaker: TBD</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{% now "F d, Y H:i" %}</p>
+                            <div class="flex space-x-2 mt-3">
+                                <button class="px-3 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)] flex items-center">
+                                    <span class="material-symbols-outlined text-lg mr-1">calendar_add_on</span> Add to Calendar
+                                </button>
+                                <button class="px-3 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)] flex items-center watch-later">
+                                    <span class="material-symbols-outlined text-lg mr-1">bookmark</span> Watch Later
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
-            <div class="lg:col-span-2">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg sm:text-xl font-semibold gradient-header">Lecture Schedule</h3>
-                    <select class="filter-select">
-                        <option>Filter by Topic</option>
-                        <option>Technology</option>
-                        <option>Leadership</option>
-                        <option>Data Science</option>
-                    </select>
-                </div>
-                <div class="carousel">
-                    {% for i in "123" %}
-                    <div class="carousel-item card glassmorphic rounded-xl p-4">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <span class="material-symbols-outlined text-lg text-[var(--primary-green)]">event</span>
-                            <h4 class="text-base font-medium">Lecture {{ i }}</h4>
-                        </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Speaker: TBD</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{% now "F d, Y H:i" %}</p>
-                        <div class="flex space-x-2 mt-3">
-                            <button class="px-3 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)] flex items-center">
-                                <span class="material-symbols-outlined text-lg mr-1">calendar_add_on</span> Add to Calendar
-                            </button>
-                            <button class="px-3 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)] flex items-center watch-later">
-                                <span class="material-symbols-outlined text-lg mr-1">bookmark</span> Watch Later
-                            </button>
-                        </div>
+        </div>
+    </div>
+
+    <!-- UPDATES -->
+<div id="updates" class="tab-content {% if active_tab == 'updates' %}block{% else %}hidden{% endif %}">
+    <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Updates</h2>
+    <div class="space-y-4">
+        {% if user_messages %}
+            {% for msg in user_messages %}
+            <div class="card glassmorphic rounded-xl p-6 {% if not msg.is_read %}border-2 border-[var(--primary-green)] shadow-lg animate-pulse{% endif %} message-item" data-id="{{ msg.id }}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">notifications</span>
+                        <h3 class="text-base sm:text-lg font-semibold gradient-header">
+                            {% if not msg.is_read %}
+                                <span class="inline-flex items-center">
+                                    <span class="relative flex h-3 w-3 mr-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--primary-green)] opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-3 w-3 bg-[var(--primary-green)]"></span>
+                                    </span>
+                                    New Update
+                                </span>
+                            {% else %}
+                                Update
+                            {% endif %}
+                        </h3>
                     </div>
-                    {% endfor %}
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ msg.created_at|date:"M d, Y H:i" }}
+                    </span>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mt-2 message-preview">
+                    {{ msg.message_text|truncatechars:80 }}
+                </p>
+                <div class="flex gap-2 mt-3">
+                    <button 
+                        class="mark-read-btn px-4 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)] transition-colors"
+                        data-id="{{ msg.id }}"
+                        data-read="{{ msg.is_read|yesno:'true,false' }}">
+                        {% if not msg.is_read %}Mark as Read{% else %}Mark as Unread{% endif %}
+                    </button>
+                    <button 
+                        class="view-details-btn px-4 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)]"
+                        data-id="{{ msg.id }}"
+                        data-title="{% if not msg.is_read %}New Update{% else %}Update{% endif %}"
+                        data-text="{{ msg.message_text }}"
+                        data-date="{% now "M d, Y H:i" %}">
+                        View Details
+                    </button>
                 </div>
             </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                <span class="material-symbols-outlined text-6xl mb-4 text-gray-300">inbox</span>
+                <p class="text-lg">No updates yet.</p>
+                <p class="text-sm">We'll notify you when there's something new.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- VIEW DETAILS MODAL -->
+<div id="message-details-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-dark-surface rounded-2xl p-6 w-full max-w-lg mx-4 shadow-xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold gradient-header" id="modal-title">Update</h3>
+            <button id="close-modal" class="text-gray-500 hover:text-red-600">
+                <span class="material-symbols-outlined">close</span>
+         </button>
+        </div>
+        <p class="text-sm text-gray-500 mb-2" id="modal-date"></p>
+        <p class="text-gray-700 dark:text-gray-300" id="modal-text"></p>
+        <div class="mt-6 flex justify-end">
+            <button id="close-modal-btn" class="px-4 py-2 bg-[var(--primary-green)] text-white rounded-lg hover:bg-[var(--accent-emerald)] transition">
+                Close
+            </button>
         </div>
     </div>
 </div>
-            <div id="updates" class="tab-content {% if active_tab == 'updates' %}block{% else %}hidden{% endif %}">
-                <h2 class="text-xl sm:text-2xl font-bold mb-6 gradient-header">Updates</h2>
-                <div class="space-y-4">
-                    {% for i in "12" %}
-                    <div class="card glassmorphic rounded-xl p-6">
-                        <div class="flex items-center space-x-3">
-                            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)]">notifications</span>
-                            <h3 class="text-base sm:text-lg font-semibold gradient-header">{% if forloop.first %}Latest Update{% else %}Previous Update{% endif %}</h3>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">No updates available.</p>
-                        <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">{% now "F d, Y H:i" %}</p>
-                        <button class="mt-3 px-4 py-1 text-sm text-[var(--primary-green)] hover:text-[var(--accent-emerald)]">{% if forloop.first %}Pin Update{% else %}View Details{% endif %}</button>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </main>
-    </div>
+</main> <!-- END OF <main> -->
+
+</div> <!-- Close outer container if needed -->
+
+<!-- TAB SWITCH JS -->
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -1657,7 +1753,7 @@ cropImageBtn.addEventListener('click', () => {
             
             const tabButtons = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
-            const moreButton = document.getElementById('more-button');
+            const moreButton = document.getElementById('more-button') || "";
             const moreMenu = document.getElementById('more-menu');
             const tabItems = document.querySelectorAll('.tab-item');
             const navContainer = document.querySelector('.tab-menu ul');
@@ -1689,7 +1785,7 @@ watchLaterButtons.forEach(button => {
 });
 
             // Handle tab overflow for small screens
-            function updateNav() {
+           /* function updateNav() {
                 const navWidth = navContainer.offsetWidth;
                 let totalWidth = 0;
                 const moreTab = document.getElementById('more-tab');
@@ -1714,10 +1810,12 @@ watchLaterButtons.forEach(button => {
 
                 moreTab.classList.toggle('hidden', moreMenu.children.length === 0);
             }
+                
 
             // Initial nav update and resize listener
             updateNav();
             window.addEventListener('resize', updateNav);
+            */
 
             // More menu toggle
             if (moreButton) {
@@ -1775,255 +1873,1079 @@ watchLaterButtons.forEach(button => {
             }
         });
     </script>
-    <script>
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded at 05:50 PM WAT, October 07, 2025');
+<script>
+ 
+  window.APP_URLS = {
+    get_positions_api: "{% url 'nacos_app:get_positions_api' %}",
+    submit_contest_application: "{% url 'nacos_app:submit_contest_application' %}",
+    
+  };
+  window.APP_URLS.check_contest_status = "{% url 'nacos_app:check_contest_status' %}";
+</script>
+<script src="{% static 'js/positionsubmit.js' %}" defer></script>
+<script src="{% static 'js/timeline2.js' %}" defer></script>
 
-    // Modal Elements with Debugging
-    const contestModal = document.getElementById('contest-modal');
-    console.log('contestModal:', contestModal);
-    if (!contestModal) {
-        console.error('Error: contest-modal element not found in DOM');
-        return;
-    }
 
-    const contestNowBtn = document.getElementById('contest-now-btn');
-    console.log('contestNowBtn:', contestNowBtn);
-    if (!contestNowBtn) {
-        console.error('Error: contest-now-btn element not found in DOM');
-        return;
-    }
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // MARK AS READ
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const messageId = this.dataset.id;
+            const isRead = this.dataset.read === 'true';
+            const card = this.closest('.message-item');
+            const preview = card.querySelector('.message-preview');
 
-    const closeContestModal = document.getElementById('close-contest-modal');
-    const nextBtn = document.getElementById('next-btn');
-    const backBtn = document.getElementById('back-btn');
-    const exitBtn = document.getElementById('exit-btn');
-    const submitContest = document.getElementById('submit-contest');
-    const manifestoInput = document.getElementById('manifesto-input');
-    const positionOptions = document.querySelectorAll('.position-option');
-    const step1 = document.getElementById('step-1');
-    const step2 = document.getElementById('step-2');
-    const uploadResultBtn = document.getElementById('upload-result-btn');
-    const resultPdf = document.getElementById('result-pdf');
-    const resultFilename = document.getElementById('result-filename');
-    const uploadAccountBtn = document.getElementById('upload-account-btn');
-    const accountPdf = document.getElementById('account-pdf');
-    const accountFilename = document.getElementById('account-filename');
-    const pdfFrame = document.getElementById('pdf-frame');
-    const progressCircle = document.getElementById('progress-circle');
-    const charCount = document.getElementById('char-count');
-    const pdfViewer = document.getElementById('pdf-viewer');
+            fetch("{% url 'nacos_app:ajax_mark_message_read' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: new URLSearchParams({
+                    'message_id': messageId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update button
+                    this.textContent = data.is_read ? 'Mark as Unread' : 'Mark as Read';
+                    this.dataset.read = data.is_read;
 
-    // State Management
-    let selectedPosition = null;
-    let hasUploaded = false;
-
-    // Modal Control
-    contestNowBtn.addEventListener('click', () => {
-        console.log('Contest Now button clicked');
-        if (contestModal) {
-            contestModal.classList.remove('hidden');
-            contestModal.style.display = 'flex'; // Force display
-            const modalContent = contestModal.querySelector('.bg-white_90'); // Adjusted selector
-            if (modalContent) {
-                modalContent.classList.add('data-[open]:scale-100', 'data-[open]:opacity-100');
-                modalContent.style.opacity = '1'; // Force opacity
-                modalContent.style.transform = 'scale(1)'; // Force scale
-                step2.classList.add('hidden');
-                adjustModalHeight();
-                console.log('Modal should be visible now');
-            } else {
-                console.error('Modal content not found with selector .bg-white/90');
-            }
-        }
-    });
-
-    closeContestModal.addEventListener('click', () => {
-        if (contestModal) {
-            contestModal.classList.add('hidden');
-            contestModal.style.display = 'none';
-            resetForm();
-            console.log('Modal closed');
-        }
-    });
-
-    exitBtn.addEventListener('click', () => {
-        if (contestModal) {
-            contestModal.classList.add('hidden');
-            contestModal.style.display = 'none';
-            resetForm();
-            console.log('Modal exited');
-        }
-    });
-
-    // Position Selection
-    positionOptions.forEach(option => {
-        option.addEventListener('click', () => {
-            if (selectedPosition === option) {
-                option.classList.remove('selected');
-                selectedPosition = null;
-            } else {
-                positionOptions.forEach(opt => opt.classList.remove('selected'));
-                option.classList.add('selected');
-                selectedPosition = option;
-            }
-            toggleNextButton();
+                    // Update card
+                    if (data.is_read) {
+                        card.classList.remove('border-2', 'border-[var(--primary-green)]', 'shadow-lg', 'animate-pulse');
+                    } else {
+                        card.classList.add('border-2', 'border-[var(--primary-green)]', 'shadow-lg', 'animate-pulse');
+                    }
+                }
+            });
         });
     });
 
-    // Step Navigation
-    nextBtn.addEventListener('click', () => {
-        if (nextBtn.dataset.disabled !== 'true' && selectedPosition && manifestoInput.value.trim()) {
-            step1.dataset.state = 'inactive';
-            step2.dataset.state = 'active';
-            step1.classList.add('hidden');
-            step2.classList.remove('hidden');
-            progressCircle.style.strokeDashoffset = '0';
-            document.querySelector('[data-step="2"]').dataset.active = 'true';
-            toggleSubmitButton();
-        }
+    // VIEW DETAILS
+    const modal = document.getElementById('message-details-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDate = document.getElementById('modal-date');
+    const modalText = document.getElementById('modal-text');
+    const closeModal = document.getElementById('close-modal');
+    const closeBtn = document.getElementById('close-modal-btn');
+
+    document.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            modalTitle.textContent = this.dataset.title;
+            modalDate.textContent = this.dataset.date;
+            modalText.textContent = this.dataset.text;
+            modal.classList.remove('hidden');
+        });
     });
 
-    backBtn.addEventListener('click', () => {
-        step1.dataset.state = 'active';
-        step2.dataset.state = 'inactive';
-        step1.classList.remove('hidden');
-        step2.classList.add('hidden');
-        progressCircle.style.strokeDashoffset = '31.4';
-        document.querySelector('[data-step="2"]').dataset.active = 'false';
-        toggleNextButton();
+    [closeModal, closeBtn].forEach(el => {
+        el.addEventListener('click', () => modal.classList.add('hidden'));
     });
 
-    // File Uploads
-    uploadResultBtn.addEventListener('click', () => resultPdf.click());
-    uploadAccountBtn.addEventListener('click', () => accountPdf.click());
-
-    resultPdf.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file && file.type === 'application/pdf') {
-            resultFilename.textContent = file.name;
-            displayPdf(file);
-            hasUploaded = true;
-        } else {
-            resultFilename.textContent = 'No file selected';
-            pdfFrame.src = '';
-            hasUploaded = accountPdf.files.length > 0;
-        }
-        toggleSubmitButton();
+    modal.addEventListener('click', e => {
+        if (e.target === modal) modal.classList.add('hidden');
     });
-
-    accountPdf.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file && file.type === 'application/pdf') {
-            accountFilename.textContent = file.name;
-            displayPdf(file);
-            hasUploaded = true;
-        } else {
-            accountFilename.textContent = 'No file selected';
-            pdfFrame.src = '';
-            hasUploaded = resultPdf.files.length > 0;
-        }
-        toggleSubmitButton();
-    });
-
-    submitContest.addEventListener('click', () => {
-        if (submitContest.dataset.disabled !== 'true' && hasUploaded) {
-            alert('Application submitted successfully!');
-            contestModal.classList.add('hidden');
-            contestModal.style.display = 'none';
-            resetForm();
-        }
-    });
-
-    // Character Count
-    manifestoInput.addEventListener('input', () => {
-        const count = manifestoInput.value.length;
-        charCount.textContent = `${count}/200`;
-        toggleNextButton();
-    });
-
-    // Helper Functions
-    function displayPdf(file) {
-        const url = URL.createObjectURL(file);
-        pdfViewer.classList.remove('hidden');
-        pdfFrame.src = url;
-    }
-
-    function toggleNextButton() {
-        if (selectedPosition && manifestoInput.value.trim().length > 0 && manifestoInput.value.length <= 200) {
-            nextBtn.dataset.disabled = 'false';
-        } else {
-            nextBtn.dataset.disabled = 'true';
-        }
-    }
-
-    function toggleSubmitButton() {
-        if (hasUploaded) {
-            submitContest.dataset.disabled = 'false';
-        } else {
-            submitContest.dataset.disabled = 'true';
-        }
-    }
-
-    function resetForm() {
-        manifestoInput.value = '';
-        charCount.textContent = '0/200';
-        positionOptions.forEach(opt => opt.classList.remove('selected'));
-        resultFilename.textContent = 'No file selected';
-        accountFilename.textContent = 'No file selected';
-        pdfFrame.src = '';
-        pdfViewer.classList.add('hidden');
-        selectedPosition = null;
-        hasUploaded = false;
-        step1.dataset.state = 'active';
-        step2.dataset.state = 'inactive';
-        step1.classList.remove('hidden');
-        step2.classList.add('hidden');
-        progressCircle.style.strokeDashoffset = '31.4';
-        document.querySelector('[data-step="2"]').dataset.active = 'false';
-        toggleNextButton();
-        toggleSubmitButton();
-    }
-
-    // Keyboard and Responsiveness Handling
-    function adjustModalHeight() {
-        if (!contestModal) {
-            console.error('Modal not found during height adjustment');
-            return;
-        }
-        const modalContent = contestModal.querySelector('.bg-white/90'); // Match exact class
-        if (!modalContent) {
-            console.error('Modal content not found with selector .bg-white/90');
-            return;
-        }
-        const contentArea = modalContent.querySelector('.max-h-\[calc\(80vh-140px\)\]');
-        const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        const keyboardHeight = window.innerHeight - viewportHeight;
-        if (keyboardHeight > 100) {
-            contentArea.style.maxHeight = `calc(80vh - ${keyboardHeight + 60}px - 6rem)`;
-            modalContent.style.paddingBottom = `${Math.min(keyboardHeight + 20, 100)}px`;
-        } else {
-            contentArea.style.maxHeight = 'calc(80vh - 140px)';
-            modalContent.style.paddingBottom = '1.5rem';
-        }
-        if (document.activeElement === manifestoInput && contestModal.style.display === 'flex') {
-            manifestoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }
-
-    // Event Listeners with Modal Open Check
-    const handleResize = () => contestModal.style.display === 'flex' ? adjustModalHeight() : null;
-    window.addEventListener('resize', handleResize);
-    window.visualViewport && window.visualViewport.addEventListener('resize', handleResize);
-    manifestoInput.addEventListener('focus', adjustModalHeight);
-    manifestoInput.addEventListener('blur', adjustModalHeight);
-
-    // Initialize
-    adjustModalHeight();
-    toggleNextButton();
-    toggleSubmitButton();
 });
-    </script>
+</script>
+<script>
+// Simple client-side filter
+document.querySelector('.filter-select')?.addEventListener('change', function() {
+    const filter = this.value.toLowerCase();
+    document.querySelectorAll('tbody tr').forEach(row => {
+        const position = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase();
+        row.style.display = filter === '' || position.includes(filter) ? '' : 'none';
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const infoEl = document.getElementById('election-info');
+    const countdownEl = document.getElementById('countdown-display');
+    const statusBadge = document.getElementById('election-status-badge');
+    const voteBtn = document.getElementById('vote-button');
+    const progressBar = document.getElementById('progress-bar');
+
+    let interval = null;
+
+    function fetchTimeline() {
+        const url = "{% url 'nacos_app:get_latest_timeline' %}";
+        fetch(url)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(data => {
+                if (data.success && data.latest) {
+                    startCountdown(data.latest.start_date, data.latest.end_date);
+                } else {
+                    showNoElection();
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                showError();
+            });
+    }
+
+    function showNoElection() {
+        statusBadge.textContent = 'No Election';
+        statusBadge.className = 'text-xs bg-white/30 text-white px-3 py-1 rounded-full font-medium';
+
+        infoEl.innerHTML = `
+            <p class="text-white/80 text-sm mb-2">No elections scheduled.</p>
+            <div class="text-center">
+                <span class="material-symbols-outlined text-5xl text-white/50 mb-1">schedule</span>
+                <p class="text-white/70 text-xs">Check back later</p>
+            </div>
+        `;
+
+        countdownEl.innerHTML = '';
+        voteBtn.textContent = 'No Active Election';
+        voteBtn.className = 'mt-4 w-full px-4 py-2.5 text-sm font-medium bg-white/20 text-white/70 rounded-md cursor-not-allowed';
+        progressBar.style.width = '0%';
+        if (interval) clearInterval(interval);
+    }
+
+    function showError() {
+        statusBadge.textContent = 'Error';
+        statusBadge.className = 'text-xs bg-red-500 text-white px-3 py-1 rounded-full font-medium';
+        infoEl.innerHTML = '<p class="text-red-200 text-sm">Failed to load.</p>';
+        countdownEl.innerHTML = '';
+        voteBtn.textContent = 'Retry';
+        progressBar.style.width = '0%';
+        if (interval) clearInterval(interval);
+    }
+
+    function startCountdown(startISO, endISO) {
+        const startDate = new Date(startISO);
+        const endDate = new Date(endISO);
+
+        if (isNaN(startDate) || isNaN(endDate)) {
+            showError();
+            return;
+        }
+
+        const formatDateTime = (d) => {
+            return d.toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric'
+            }) + ' at ' + d.toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        infoEl.innerHTML = `
+            <p class="text-white/90 text-sm font-medium">
+                ${formatDateTime(startDate)} – ${formatDateTime(endDate)}
+            </p>
+        `;
+
+        function update() {
+            const now = new Date();
+            const totalDuration = endDate - startDate;
+            const toStart = startDate - now;
+            const toEnd = endDate - now;
+
+            const formatTime = (ms) => {
+                const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((ms % (1000 * 60)) / 1000);
+                return `${days}d|${hours.toString().padStart(2,'0')}h|${mins.toString().padStart(2,'0')}m|${secs.toString().padStart(2,'0')}s`;
+            };
+
+            if (toStart > 0) {
+                // UPCOMING
+                statusBadge.textContent = 'Upcoming';
+                statusBadge.className = 'text-xs bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full font-medium';
+
+                countdownEl.innerHTML = `
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-white mb-1">Starts In</h3>
+                        <div class="text-xl font-mono text-white tracking-wider">
+                            ${formatTime(toStart)}
+                        </div>
+                    </div>
+                `;
+
+                voteBtn.textContent = 'Get Ready';
+                voteBtn.className = 'mt-4 w-full px-4 py-2.5 text-sm font-bold bg-white text-green-700 rounded-md shadow-md hover:shadow-lg transition-all';
+                voteBtn.disabled = true;
+                const progress = ((totalDuration - toStart) / totalDuration) * 100;
+                progressBar.style.width = `${Math.min(progress, 100)}%`;
+                progressBar.className = 'h-full bg-yellow-400 rounded-full transition-all duration-1000';
+
+            } else if (toEnd > 0) {
+                // LIVE
+                statusBadge.textContent = 'Live';
+                statusBadge.className = 'text-xs bg-white-500 text-green px-3 py-1 rounded-full font-medium';
+
+                countdownEl.innerHTML = `
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-white mb-1">Election is LIVE!</h3>
+                        <div class="text-xl font-mono text-white tracking-wider">
+                            ${formatTime(toEnd)}
+                        </div>
+                    </div>
+                `;
+
+                voteBtn.textContent = 'Vote Now';
+                voteBtn.className = 'mt-4 w-full px-4 py-2.5 text-sm font-bold bg-white text-green-700 rounded-md shadow-lg hover:shadow-xl transition-all animate-pulse';
+                voteBtn.disabled = false;
+                const progress = ((totalDuration - toEnd) / totalDuration) * 100;
+                progressBar.style.width = `${Math.min(progress, 100)}%`;
+                progressBar.className = 'h-full bg-white rounded-full transition-all duration-1000';
+                
+                voteBtn.onclick = () => {
+                const modal = document.getElementById('election-vote-modal');
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            };
+            } else {
+                // ENDED
+                statusBadge.textContent = 'Ended';
+                statusBadge.className = 'text-xs bg-red-500 text-white px-3 py-1 rounded-full font-medium';
+
+                countdownEl.innerHTML = `
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-white mb-1">Election Ended</h3>
+                        <p class="text-white/80 text-sm">Results will be announced soon.</p>
+                    </div>
+                `;
+
+                voteBtn.style.display="None"
+                voteBtn.className = 'mt-4 w-full px-4 py-2.5 text-sm font-medium bg-white/20 text-white/70 rounded-md cursor-not-allowed';
+
+                progressBar.style.width = '100%';
+                progressBar.className = 'h-full bg-red-500 rounded-full';
+                voteBtn.disabled = true;
+
+                if (interval) clearInterval(interval);
+            }
+        }
+
+        update();
+        if (interval) clearInterval(interval);
+        interval = setInterval(update, 1000);
+    }
+
+    fetchTimeline();
+});
+</script>
+
+
+<style>
+/* FONT & BASE */
+#election-vote-modal { font-family: 'Inter', 'Segoe UI', sans-serif; }
+.modal-screen { display: none; }
+.modal-screen.active { display: block; animation: fadeInUp 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+/* PROGRESS DOTS */
+.progress-dot {
+    @apply w-2 h-2 rounded-full bg-white/30 transition-all duration-500;
+}
+.progress-dot.active {
+    @apply w-8 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-lg;
+}
+
+/* ULTRA BUTTONS */
+.ultra-btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base focus:ring-4 focus:ring-emerald-400/50 focus:outline-none ripple;
+}
+.ultra-btn-secondary {
+    @apply px-6 py-3 bg-white/10 backdrop-blur-md text-white font-bold rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base focus:ring-4 focus:ring-white/50;
+}
+.ultra-btn-ghost {
+    @apply px-5 py-2.5 bg-transparent text-white/70 font-medium rounded-full hover:bg-white/10 transition-all duration-300 flex items-center text-sm;
+}
+
+/* CANDIDATE CARD — CINEMATIC */
+.candidate-card {
+    @apply bg-white/5 backdrop-blur-2xl rounded-2xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-400 hover:bg-white/10 hover:border-white/30 hover:shadow-2xl focus-within:ring-4 focus-within:ring-yellow-400/50 group;
+}
+.candidate-card.selected {
+    @apply ring-4 ring-yellow-400/70 bg-gradient-to-br from-white/10 to-white/5 scale-105 shadow-3xl border-yellow-400/50;
+}
+.candidate-card img {
+    @apply w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-4 border-white/20 group-hover:border-white/40 transition-all;
+}
+.candidate-card .info {
+    @apply opacity-0 group-hover:opacity-100 transition-opacity duration-300;
+}
+
+/* RIPPLE EFFECT */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+.ripple::after {
+    content: '';
+    position: absolute;
+    width: 0; height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: ripple 0.6s ease-out;
+}
+@keyframes ripple { to { width: 300px; height: 300px; opacity: 0; } }
+
+/* TOOLTIP */
+.tooltip {
+    @apply absolute -top-10 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-300;
+}
+.candidate-card:hover .tooltip { @apply opacity-100; }
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px) translateX(-50%); }
+    to { opacity: 1; transform: translateY(0) translateX(-50%); }
+}
+.animate-fade-in-up {
+    animation: fade-in-up 0.4s ease-out;
+}
+</style>
+<style>
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.5s ease-out; }
+
+.animate-pulse { animation: pulse 2s infinite; }
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+</style>
+
+<!-- ELECTION MODAL — FULLY ACCESSIBLE & ANIMATED -->
+<!-- ELECTION MODAL — MOBILE-PERFECT -->
+<div id="election-vote-modal" class="fixed inset-0 z-[9999] hidden bg-black/70 backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="flex items-center justify-center min-h-screen p-4 pb-20 md:pb-4"> <!-- Added bottom padding -->
+        <div class="bg-gradient-to-br from-emerald-600/95 via-teal-600/95 to-cyan-700/95 rounded-3xl shadow-4xl w-full max-w-6xl h-full max-h-[90vh] md:max-h-[95vh] overflow-hidden border border-white/20 flex flex-col">
+            
+            <!-- HEADER -->
+            <div class="flex items-center justify-between p-3 md:p-5 border-b border-white/10 relative">
+                <div class="flex items-center gap-2 md:gap-3">
+                    <div class="w-9 h-9 md:w-11 md:h-11 bg-white/20 rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-lg md:text-xl">how_to_vote</span>
+                    </div>
+                    <div>
+                        <h2 id="modal-title" class="text-base md:text-xl font-bold text-white">NACOS Election 2025</h2>
+                        <p class="text-xs text-white/60">Secure • Transparent • Your Voice</p>
+                    </div>
+                </div>
+                <button id="modal-close-btn" class="p-1.5 md:p-2 rounded-full hover:bg-white/10 transition" aria-label="Close modal">
+                    <span class="material-symbols-outlined text-white text-lg md:text-xl">close</span>
+                </button>
+
+                <!-- REPORT BUTTON (TOP-RIGHT) -->
+                
+                <div id="report-tooltip" class="hidden absolute top-10 md:top-12 right-0 bg-black/90 text-white text-xs px-2.5 py-1.5 rounded-lg whitespace-nowrap">
+                    Report intimidation
+                </div>
+            </div>
+
+            <!-- PROGRESS -->
+            <div class="px-3 md:px-5 pt-2 md:pt-3">
+                <div class="h-1 bg-white/20 rounded-full overflow-hidden">
+                    <div id="modal-progress" class="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-700" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- SCREENS (SCROLLABLE) -->
+            <div class="flex-1 overflow-y-auto p-3 md:p-5 space-y-6 md:space-y-8">
+                <div id="modal-screens">
+
+                    <!-- SCREEN 1: WELCOME -->
+                    <div class="modal-screen active text-center" role="region" aria-label="Welcome">
+                        <div class="max-w-xl mx-auto">
+                            <div class="flex flex-col items-center mb-5">
+                                <img id="user-photo" src="" class="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-3 md:border-4 border-white/30 mb-3" alt="Your profile">
+                                <h1 class="text-xl md:text-2xl font-bold text-white leading-tight">
+                                    Welcome, <span id="modal-user-name" class="text-yellow-300"></span>
+                                </h1>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-5 mb-5 border border-white/20 text-left">
+                                <p class="text-white/90 text-xs md:text-sm leading-relaxed">
+                                    You are required to cast your vote as guaranteed by the <strong>NACOS Constitution</strong>.
+                                </p>
+                                <p class="text-white/80 text-xs md:text-sm mt-2">
+                                    Report any form of intimidation. You are in control...
+                                </p>
+                                <p class="text-white/70 text-xs italic mt-2">
+                                    Just make me your voting buddy
+                                </p>
+                            </div>
+                            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
+                                <p class="text-yellow-300 text-xs font-medium">
+                                    <span class="material-symbols-outlined text-xs align-middle mr-1">info</span>
+                                  Click on next button to continue
+                                </p>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 2: POSITIONS -->
+                    <div class="modal-screen" role="region" aria-label="Positions">
+                        <div class="max-w-3xl mx-auto">
+                            <h2 class="text-lg md:text-xl font-bold text-white text-center mb-4">
+                                <span id="modal-user-name-2"></span>... I love your courage!
+                            </h2>
+                            <p class="text-white/90 text-center mb-4 text-xs md:text-sm">
+                               Currently, there are <strong id="total-positions">0</strong> positions that is being contested:
+                            </p>
+                            <div id="positions-overview" class="space-y-2 mb-5"></div>
+                            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
+                                <p class="text-yellow-300 text-xs font-medium">
+                                    <span class="material-symbols-outlined text-xs align-middle mr-1">info</span>
+                                    Skip any position if unsure
+                                </p>
+                            </div>
+                           
+                        </div>
+                    </div>
+
+                    <!-- VOTING SCREENS -->
+                    <div id="voting-screens-container"></div>
+
+                    <!-- REVIEW -->
+                    <div class="modal-screen" role="region" aria-label="Review">
+                        <div class="max-w-3xl mx-auto">
+                            <h2 class="text-lg md:text-xl font-bold text-white text-center mb-5">
+                                My friend, you have voted nicely!
+                            </h2>
+                            <p class="text-white/90 text-center mb-5 text-xs md:text-sm">
+                                Here is how you voted:
+                            </p>
+                            <div id="review-votes" class="space-y-3 mb-5"></div>
+                            <div class="flex flex-col md:flex-row gap-2 justify-center">
+                                <button id="btn-start-over" class="px-5 py-2.5 bg-white/20 text-white font-bold rounded-xl border border-white/30 hover:bg-white/30 transition-all duration-300 text-xs md:text-sm flex items-center justify-center gap-1.5">
+                                    <span class="material-symbols-outlined text-sm">refresh</span>
+                                    Start Again
+                                </button>
+                                <button id="btn-submit-vote" class="px-5 py-2.5 bg-white text-emerald-600 font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-xs md:text-sm flex items-center justify-center gap-1.5">
+                                    Submit Vote
+                                    <span class="material-symbols-outlined text-sm">send</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FINAL -->
+                    <div class="modal-screen text-center" role="region" aria-label="Thank you">
+                        <div class="max-w-xl mx-auto">
+                            <div class="w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center animate-bounce">
+                                <span class="material-symbols-outlined text-white text-4xl md:text-5xl">verified</span>
+                            </div>
+                            <h2 class="text-xl md:text-2xl font-bold text-white mb-3">
+                                <span id="modal-user-name-final"></span>, vote submitted!
+                            </h2>
+                            <p class="text-white/90 mb-3 text-xs md:text-sm">
+                                Thank you for your time...
+                            </p>
+                            <p class="text-white/70 text-xs md:text-sm">
+                                Closing in <span id="final-countdown" class="font-bold text-yellow-300">10</span>s
+                            </p>
+                            <p class="text-white/60 text-xs italic mt-3">I will miss you</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAV FOOTER (SMALLER ON MOBILE) -->
+            <div class="flex justify-between items-center p-3 md:p-4 border-t border-white/10">
+                <button id="btn-prev" class="px-4 py-2 bg-white/10 text-white/70 font-medium rounded-full hover:bg-white/20 transition-all duration-300 flex items-center gap-1 text-xs opacity-0 pointer-events-none" aria-label="Previous">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>
+                    Prev
+                </button>
+                <button id="btn-next" class="px-4 py-2 bg-white text-emerald-600 font-bold rounded-full shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-1 text-xs" aria-label="Next">
+                    Next
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ALREADY VOTED SUCCESS MODAL -->
+<div id="already-voted-modal" class="fixed inset-0 z-[9999] hidden bg-black/70 backdrop-blur-xl" role="dialog" aria-labelledby="voted-title">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-gradient-to-br from-green-600/95 via-emerald-600/95 to-teal-700/95 rounded-3xl shadow-4xl w-full max-w-md p-8 text-center border border-white/20">
+            <div class="w-20 h-20 bg-white/20 rounded-full mx-auto mb-5 flex items-center justify-center animate-bounce">
+                <span class="material-symbols-outlined text-white text-5xl">verified</span>
+            </div>
+            <h2 id="voted-title" class="text-2xl md:text-3xl font-bold text-white mb-3">
+                Thank You, <span id="voted-user-name"></span>!
+            </h2>
+            <p class="text-white/90 text-base mb-2">
+                Your vote has been <strong>successfully recorded</strong>.
+            </p>
+            <p class="text-white/70 text-sm">
+                You have already participated in this election.
+            </p>
+            <p class="text-white/60 text-xs mt-6">
+                Closing in <span id="voted-countdown" class="font-bold text-yellow-300">5</span>s...
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const voteBtn = document.getElementById('vote-button');
+    const modal = document.getElementById('election-vote-modal');
+    const closeBtn = document.getElementById('modal-close-btn');
+    const progressBar = document.getElementById('modal-progress');
+    const userPhoto = document.getElementById('user-photo');
+    const userNameEls = document.querySelectorAll('[id*="modal-user-name"]');
+    
+    let currentScreen = 0;
+    let votes = {};
+    let positions = [];
+    let candidates = [];
+    const userName = "{{ request.user.get_full_name|default:request.user.username }}";
+    const userPhotoUrl = "{{ request.user.profile_picture.url|default:'/static/default-avatar.png' }}";
+
+    if (!modal || !voteBtn) return;
+
+    function updateVoteButton() {
+        if (voteBtn.textContent.trim() === 'Vote Now') {
+            voteBtn.onclick = openModal;
+            voteBtn.setAttribute('aria-label', 'Open voting modal');
+        } else {
+            voteBtn.onclick = null;
+        }
+    }
+
+    function openModal() {
+        fetch("{% url 'nacos_app:get_election_data' %}")
+            .then(r => r.json())
+            .then(data => {
+                if (data.has_voted) {
+    // Hide main modal if somehow open
+    const mainModal = document.getElementById('election-vote-modal');
+    if (mainModal) mainModal.classList.add('hidden');
+
+    // Show "Already Voted" success modal
+    const votedModal = document.getElementById('already-voted-modal');
+    const votedNameEl = document.getElementById('voted-user-name');
+    const countdownEl = document.getElementById('voted-countdown');
+
+    votedNameEl.textContent = userName;
+    votedModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Auto-close after 5 seconds
+    let seconds = 5;
+    countdownEl.textContent = seconds;
+    const timer = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        if (seconds <= 0) {
+            clearInterval(timer);
+            votedModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            location.reload(); // Optional: refresh to update card
+        }
+    }, 1000);
+
+    return; // Prevent main modal from opening
+}
+                positions = data.positions;
+                candidates = data.candidates;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                initModal();
+            });
+    }
+
+    function initModal() {
+        userNameEls.forEach(el => el.textContent = userName);
+        userPhoto.src = userPhotoUrl;
+
+        renderPositionsOverview();
+        renderVotingScreens();
+        showScreen(0);
+    }
+
+    function showScreen(index) {
+        const screens = document.querySelectorAll('.modal-screen');
+        screens.forEach((s, i) => {
+            s.classList.toggle('active', i === index);
+            s.setAttribute('aria-hidden', i !== index);
+        });
+        
+        const total = screens.length;
+        const progress = ((index + 1) / total) * 100;
+        progressBar.style.width = `${progress}%`;
+
+        const prevBtn = document.getElementById('btn-prev');
+        const nextBtn = document.getElementById('btn-next');
+        prevBtn.classList.toggle('opacity-0', index === 0);
+        prevBtn.classList.toggle('pointer-events-none', index === 0);
+
+        if (index === total - 2) {
+            nextBtn.innerHTML = 'Submit Vote <span class="material-symbols-outlined text-base">send</span>';
+        } else {
+            nextBtn.innerHTML = 'Next <span class="material-symbols-outlined text-base">arrow_forward</span>';
+        }
+
+        currentScreen = index;
+        if (index === total - 2) renderReview();
+    }
+
+   
+  function renderPositionsOverview() {
+    document.getElementById('total-positions').textContent = positions.length;
+    const container = document.getElementById('positions-overview');
+    container.innerHTML = positions.map(p => {
+        const posCandidates = candidates.filter(c => c.position_id === p.id);
+        const count = posCandidates.length;
+
+        // Show up to 3 photos
+        const visiblePhotos = posCandidates.slice(0, 3).map(c => ({
+            url: c.photo || '/static/default-avatar.png',
+            name: c.name
+        }));
+        const extraCount = count > 3 ? count - 3 : 0;
+
+        return `
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 text-white border border-white/20 flex items-center gap-4">
+                <!-- Stacked Photos Container -->
+                <div class="relative w-16 h-12 flex items-center">
+                    ${visiblePhotos.map((photo, idx) => `
+                        <div class="absolute top-0 ${idx === 0 ? 'left-0' : idx === 1 ? 'left-4' : 'left-8'} 
+                                    w-10 h-10 rounded-full overflow-hidden border-3 border-white shadow-md 
+                                    ring-2 ring-white/30 z-${30 - idx * 10}">
+                            <img src="${photo.url}" class="w-full h-full object-cover" alt="${photo.name}">
+                        </div>
+                    `).join('')}
+                    ${extraCount > 0 ? `
+                        <div class="absolute left-12 top-0 w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 
+                                    border-3 border-white flex items-center justify-center text-white text-xs font-bold 
+                                    shadow-lg ring-2 ring-white/40 z-40">
+                            +${extraCount}
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Text Section -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-sm md:text-base truncate">${p.name}</h3>
+                    <p class="text-xs opacity-70">${count} candidate${count !== 1 ? 's' : ''}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+   function renderVotingScreens() {
+    const container = document.getElementById('voting-screens-container');
+    container.innerHTML = positions.map((pos, i) => {
+        const posCands = candidates.filter(c => c.position_id === pos.id);
+        return `
+            <div class="modal-screen" role="region" aria-label="Vote for ${pos.name}">
+                <div class="text-center mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-2">${pos.name}</h2>
+                    <p class="text-white/60 text-xs md:text-sm">Select one candidate</p>
+                </div>
+                <div class="space-y-3 max-w-4xl mx-auto">
+                    ${posCands.map(c => {
+                        const fullName = c.name; // Already from get_full_name()
+                        const photo = c.photo || '/static/default-avatar.png';
+                        return `
+                            <div class="candidate-card group relative bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 cursor-pointer hover:bg-white/15 hover:border-white/40 transition-all duration-300 focus-within:ring-2 focus-within:ring-yellow-400" data-candidate-id="${c.id}" tabindex="0" role="button" aria-label="Vote for ${fullName}">
+                                <div class="flex items-center gap-4">
+                                    <!-- Overlapping Profile -->
+                                    <div class="relative">
+                                        <div class="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-4 border-white/30 shadow-lg">
+                                            <img src="${photo}" class="w-full h-full object-cover" alt="${fullName}">
+                                        </div>
+                                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center shadow-md">
+                                            <span class="material-symbols-outlined text-white text-xs">check</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-white flex-1 min-w-0">
+                                        <h3 class="font-bold text-base md:text-lg truncate">${fullName}</h3>
+                                        <p class="text-xs md:text-sm opacity-70 truncate">ID: ${c.nacos_id}</p>
+                                    </div>
+                                    <div class="w-7 h-7 rounded-full bg-white/10 group-hover:bg-emerald-500 transition-all"></div>
+                                </div>
+                                <div class="tooltip hidden group-hover:block absolute -top-10 left-1/2 -translate-x-1/2 bg-black/90 text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap z-10">
+                                    Click to vote
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                    <div class="candidate-card bg-white/5 rounded-2xl p-4 border border-white/10 opacity-70 cursor-pointer" data-skip tabindex="0" role="button" aria-label="Skip ${pos.name}">
+                        <p class="text-center text-white/70 font-medium text-xs md:text-sm">Skip this position</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+    function renderReview() {
+        const container = document.getElementById('review-votes');
+        container.innerHTML = positions.map(pos => {
+            const vote = votes[pos.id];
+            const cand = candidates.find(c => c.id == vote);
+            return `
+                <div class="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/20 text-white">
+                    <h3 class="font-bold text-base mb-2">${pos.name}</h3>
+                    ${cand ? `
+                        <div class="flex items-center gap-3">
+                            <img src="${cand.photo}" class="w-12 h-12 rounded-full">
+                            <div>
+                                <p class="font-medium text-sm">${cand.name}</p>
+                                <p class="text-xs opacity-70">${cand.nacos_id}</p>
+                            </div>
+                        </div>
+                    ` : `<p class="text-white/60 italic text-sm">Skipped</p>`}
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Events
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'btn-continue') showScreen(1);
+        if (e.target.id === 'btn-start-voting') showScreen(2);
+        if (e.target.id === 'btn-prev') showScreen(currentScreen - 1);
+        if (e.target.id === 'btn-next') {
+            if (currentScreen === document.querySelectorAll('.modal-screen').length - 2) {
+                submitVote();
+            } else {
+                showScreen(currentScreen + 1);
+            }
+        }
+        if (e.target.id === 'btn-start-over') { votes = {}; showScreen(1); }
+        if (e.target.id === 'btn-submit-vote') submitVote();
+
+        // Candidate selection
+        if (e.target.closest('.candidate-card')) {
+            const card = e.target.closest('.candidate-card');
+            const screen = card.closest('.modal-screen');
+            screen.querySelectorAll('.candidate-card').forEach(c => c.classList.remove('ring-2', 'ring-yellow-400', 'bg-white/20'));
+            card.classList.add('ring-2', 'ring-yellow-400', 'bg-white/20');
+            const posIndex = Array.from(document.querySelectorAll('.modal-screen')).indexOf(screen) - 2;
+            const pos = positions[posIndex];
+            if (card.dataset.candidateId) {
+                votes[pos.id] = card.dataset.candidateId;
+            } else {
+                delete votes[pos.id];
+            }
+        }
+
+        // Report
+        if (e.target.id === 'report-btn') {
+            alert("Report submitted. Admin will be notified.");
+        }
+    });
+
+    // Keyboard nav
+    document.addEventListener('keydown', e => {
+        if (!modal.classList.contains('hidden')) {
+            if (e.key === 'ArrowRight') document.getElementById('btn-next')?.click();
+            if (e.key === 'ArrowLeft') document.getElementById('btn-prev')?.click();
+            if (e.key === 'Escape') closeBtn?.click();
+        }
+    });
+
+    function submitVote() {
+        const btn = document.getElementById('btn-submit-vote');
+        btn.disabled = true;
+        btn.innerHTML = 'Submitting...';
+
+        fetch("{% url 'nacos_app:submit_vote' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ votes })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showScreen(document.querySelectorAll('.modal-screen').length - 1);
+                startCountdown();
+            } else {
+                alert(data.error);
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Vote';
+            }
+        });
+    }
+
+    function startCountdown() {
+        let sec = 10;
+        const el = document.getElementById('final-countdown');
+        const timer = setInterval(() => {
+            sec--;
+            el.textContent = sec;
+            if (sec <= 0) {
+                clearInterval(timer);
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+                location.reload();
+            }
+        }, 1000);
+    }
+
+    closeBtn?.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    });
+
+    // Report tooltip
+    const reportBtn = document.getElementById('report-btn');
+    const tooltip = document.getElementById('report-tooltip');
+    reportBtn?.addEventListener('mouseenter', () => tooltip.classList.remove('hidden'));
+    reportBtn?.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
+
+    updateVoteButton();
+    const observer = new MutationObserver(updateVoteButton);
+    observer.observe(voteBtn, { childList: true, subtree: true });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('live-results-container');
+    if (!container) {
+        console.warn('live-results-container not found');
+        return;
+    }
+
+    let lastUpdate = null;
+    let pollInterval;
+
+    function fetchResults() {
+        fetch("{% url 'nacos_app:get_live_results' %}")
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                const newDataStr = JSON.stringify(data);
+                if (newDataStr === lastUpdate) return;
+                lastUpdate = newDataStr;
+                renderResults(data);
+            })
+            .catch(err => {
+                console.warn('Live results fetch failed:', err);
+                // Don't break UI
+            });
+    }
+
+    function renderResults(data) {
+        container.innerHTML = '';
+
+        if (!data || !Array.isArray(data.positions) || data.positions.length === 0) {
+            container.innerHTML = `
+                <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-5 text-center">
+                    <p class="text-gray-500 dark:text-gray-400">No active election or results yet.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'card bg-white dark:bg-dark-surface rounded-xl shadow-md p-5 animate-fade-in';
+
+        let innerHTML = `
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-2xl text-[var(--primary-green)] animate-pulse">bar_chart</span>
+            <h4 class="text-lg font-bold">${data.election_status === 'ended' ? 'Final Results' : 'Live Election Results'}</h4>
+        </div>
+        <span class="text-xs px-3 py-1 rounded-full font-medium ${data.election_status === 'ended'
+            ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+            : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 animate-pulse'}">
+            ${data.election_status === 'ended' ? 'ENDED' : 'LIVE'}
+        </span>
+    </div>
+
+    <!-- HORIZONTAL SCROLL CONTAINER -->
+    <div class="overflow-x-auto scrollbar-hidden -mx-5 px-5">
+        <div class="flex gap-6 pb-4 min-w-max">
+            ${data.positions.map(pos => {
+                const candidates = Array.isArray(pos.candidates) ? pos.candidates : [];
+                const totalVotes = candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
+                const hasVotes = totalVotes > 0;
+                let winner = null;
+                if (hasVotes && candidates.length > 0) {
+                    winner = candidates.reduce((a, b) => (a.votes || 0) > (b.votes || 0) ? a : b);
+                }
+
+                return `
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700 flex-shrink-0 w-80">
+                        <div class="flex justify-between items-center mb-3">
+                            <h5 class="font-semibold text-sm text-gray-800 dark:text-white truncate">${pos.name}</h5>
+                            <span class="text-xs text-gray-500">${totalVotes} vote${totalVotes !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div class="space-y-3">
+                            ${candidates.length === 0 ? `
+                                <p class="text-xs text-gray-500 italic text-center py-2">No candidates</p>
+                            ` : ''}
+                            ${candidates.map(cand => {
+                                const votes = cand.votes || 0;
+                                const percentage = hasVotes ? ((votes / totalVotes) * 100).toFixed(1) : '0.0';
+                                const isWinner = winner && cand.id === winner.id;
+
+                                return `
+                                    <div class="flex items-center gap-3 group">
+                                        <div class="relative">
+                                            <img src="${cand.photo || '/static/default-avatar.png'}"
+                                                 class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm
+                                                        group-hover:scale-110 transition-transform duration-300">
+                                            ${isWinner ? `
+                                                <div class="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full
+                                                            flex items-center justify-center shadow-md">
+                                                    <span class="material-symbols-outlined text-white text-xs">star</span>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                                                    ${cand.name}
+                                                </p>
+                                                <p class="text-sm font-bold text-[var(--primary-green)] ml-2">${votes}</p>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                                                <div class="h-full bg-gradient-to-r from-green-500 to-emerald-500
+                                                             rounded-full transition-all duration-700"
+                                                     style="width: ${percentage}%"></div>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">${percentage}%</p>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    </div>
+
+    <div class="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
+        Updated: <span id="result-timestamp">just now</span>
+    </div>
+`;
+
+        data.positions.forEach(pos => {
+            // SAFE: Check candidates
+            const candidates = Array.isArray(pos.candidates) ? pos.candidates : [];
+            const totalVotes = candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
+            const hasVotes = totalVotes > 0;
+
+            // Winner: only if votes exist
+            let winner = null;
+            if (hasVotes && candidates.length > 0) {
+                winner = candidates.reduce((a, b) => (a.votes || 0) > (b.votes || 0) ? a : b);
+            }
+
+            innerHTML += `
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
+                    <div class="flex justify-between items-center mb-2">
+                        <h5 class="font-semibold text-sm text-gray-800 dark:text-white">${pos.name || 'Unknown Position'}</h5>
+                        <span class="text-xs text-gray-500">${totalVotes} vote${totalVotes !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="space-y-3">
+            `;
+
+            if (candidates.length === 0) {
+                innerHTML += `
+                    <p class="text-xs text-gray-500 italic text-center py-2">No candidates yet</p>
+                `;
+            } else {
+                candidates.forEach(cand => {
+                    const votes = cand.votes || 0;
+                    const percentage = hasVotes ? ((votes / totalVotes) * 100).toFixed(1) : '0.0';
+                    const isWinner = winner && cand.id === winner.id;
+
+                    innerHTML += `
+                        <div class="flex items-center gap-3 group">
+                            <div class="relative">
+                                <img src="${cand.photo || '/static/default-avatar.png'}" 
+                                     class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm 
+                                            group-hover:scale-110 transition-transform duration-300">
+                                ${isWinner ? `
+                                    <div class="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full 
+                                                flex items-center justify-center shadow-md animate-bounce">
+                                        <span class="material-symbols-outlined text-white text-xs">star</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-[140px]">
+                                        ${cand.name || 'Unknown'}
+                                    </p>
+                                    <p class="text-sm font-bold text-[var(--primary-green)]">${votes}</p>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-green-500 to-emerald-500 
+                                                 rounded-full transition-all duration-700 ease-out"
+                                         style="width: ${percentage}%"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">${percentage}%</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            innerHTML += `</div></div>`;
+        });
+
+        innerHTML += `
+            </div>
+            <div class="mt-5 text-center text-xs text-gray-500 dark:text-gray-400">
+                Updated: <span id="result-timestamp">just now</span>
+            </div>
+        `;
+
+        card.innerHTML = innerHTML;
+        container.appendChild(card);
+
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const ts = card.querySelector('#result-timestamp');
+        if (ts) ts.textContent = now;
+    }
+
+    // Start
+    fetchResults();
+    pollInterval = setInterval(fetchResults, 3000);
+
+    window.addEventListener('beforeunload', () => clearInterval(pollInterval));
+});
+</script>
+<style>
+
+.scrollbar-hidden {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+.scrollbar-hidden::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Optional: Smooth scroll */
+.scroll-behavior {
+    scroll-behavior: smooth;
+}
+</style>
+
+
+
+
+
+
+
+
 
 </body>
 
