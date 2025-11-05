@@ -12,6 +12,24 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(data => console.log("Session state:", data))
     .catch(error => console.error("Session check error:", error));
 
+    // Function to show error with close icon and timeout
+    function showError(errorDiv, message) {
+        errorDiv.innerHTML = `
+            ${message}
+            <button type="button" class="error-close" style="position: absolute; right: 10px; top: 10px; background: none; border: none; color: red; font-size: 16px; cursor: pointer;">&times;</button>
+        `;
+        errorDiv.style.display = 'block';
+        const closeButton = errorDiv.querySelector('.error-close');
+        closeButton.addEventListener('click', () => {
+            errorDiv.style.display = 'none';
+            errorDiv.innerHTML = '';
+        });
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+            errorDiv.innerHTML = '';
+        }, 30000);
+    }
+
     // Login form submission
     const loginForm = document.querySelector('.login-form');
     if (loginForm) {
@@ -50,16 +68,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.replace(data.redirect_url || '/login/');
                 } else {
                     const errorDiv = document.querySelector('.login-error');
-                    errorDiv.textContent = data.message || 'Invalid login credentials';
-                    errorDiv.style.display = 'block';
+                    showError(errorDiv, data.message);
                 }
             })
             .catch(error => {
                 console.error('Login error:', error);
                 isSubmitting = false;
                 const errorDiv = document.querySelector('.login-error');
-                errorDiv.textContent = 'An error occurred. Please try again.';
-                errorDiv.style.display = 'block';
+                showError(errorDiv, 'Either your Password or ID input does not match.');
             });
         });
     } else {
@@ -101,20 +117,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 isSubmitting = false;
                 if (data.success) {
                     setPasswordForm.reset();
-                    alert(data.message || 'Password set successfully!');
                     window.location.replace(data.redirect_url || '/login/');
                 } else {
                     const errorDiv = document.querySelector('.set-password-error');
-                    errorDiv.textContent = data.message || 'Error setting password';
-                    errorDiv.style.display = 'block';
+                    showError(errorDiv, data.message);
                 }
             })
             .catch(error => {
                 console.error('Set-password error:', error);
                 isSubmitting = false;
                 const errorDiv = document.querySelector('.set-password-error');
-                errorDiv.textContent = 'An error occurred. Please try again.';
-                errorDiv.style.display = 'block';
+                showError(errorDiv, 'An error in seeting your password occured');
             });
         });
     } else {
