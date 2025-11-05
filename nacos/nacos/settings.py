@@ -129,6 +129,7 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
+LOGIN_URL = '/officer/login/'  
 
 CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
@@ -177,3 +178,5 @@ LOGGING = {
 # DEFAULTS
 # ------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+WHITENOISE_AUTOREFRESH = False  # Production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

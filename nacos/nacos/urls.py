@@ -31,4 +31,6 @@ urlpatterns = [
     path('officer/', include('election_officer.urls')),  # Correct prefix
     path('admin/', admin.site.urls),
     path('', lambda request: redirect('nacos_app:login'), name='home'),
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
