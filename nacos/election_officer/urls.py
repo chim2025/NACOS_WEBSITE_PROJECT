@@ -26,6 +26,13 @@ urlpatterns = [
     path('timeline/delete-base/', lambda request: JsonResponse({'success': False}), name='delete_timeline_base'),
     
     path('position/delete/<int:pk>/', views.delete_position, name='delete_position'),
-    # nacos_app/urls.py
+    
     path('api/students/', views.get_students_api, name='get_students_api'),
+    
+
 ]
+'''
+    path('api/election-options/', views.get_election_options, name='get_election_options'),
+    path('api/get-settings/', views.get_current_settings, name='get_current_settings'),
+    path('api/save-settings/', views.save_election_settings, name='save_election_settings'),
+    '''

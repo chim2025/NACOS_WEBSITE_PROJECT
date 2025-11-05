@@ -595,3 +595,9 @@ body {
 .animate-pulse .bg-emerald-500 {
     animation: pulse-dot 2s infinite;
 }
+.opacity-50 {
+  opacity: 0.5;
+}
+.pointer-events-none {
+  pointer-events: none;
+}

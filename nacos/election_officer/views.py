@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
@@ -488,3 +489,62 @@ def get_students_api(request):
         })
 
     return JsonResponse({'students': data})
+
+'''
+@login_required
+def get_election_options(request):
+    levels = CustomUser.objects.exclude(level__isnull=True).exclude(level='').values('level').annotate(count=Count('level')).order_by('level')
+    levels_list = [{'id': item['level'], 'name': f"{item['level']} Level"} for item in levels]
+
+    depts = CustomUser.objects.exclude(department__isnull=True).exclude(department='').values('department').annotate(count=Count('department')).order_by('department')
+    depts_list = [{'id': item['department'], 'name': item['department']} for item in depts]
+
+    return JsonResponse({
+        'levels': levels_list,
+        'departments': depts_list,
+    })
+
+@login_required
+def get_current_settings(request):
+    election = ElectionTimeline.objects.order_by('-end_date').first()
+    if not election:
+        return JsonResponse({})
+
+    return JsonResponse({
+        'start_date': election.start_date.strftime('%Y-%m-%dT%H:%M') if election.start_date else '',
+        'end_date': election.end_date.strftime('%Y-%m-%dT%H:%M') if election.end_date else '',
+        'voter_levels': election.voter_levels or [],
+        'voter_departments': election.voter_departments or [],
+        'candidate_levels': election.candidate_levels or [],
+        'candidate_departments': election.candidate_departments or [],
+        'allow_all_voters': election.allow_all_voters,
+        'allow_all_candidates': election.allow_all_candidates,
+        'show_live_results': election.show_live_results,
+    })
+
+@csrf_exempt
+@login_required
+def save_election_settings(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'})
+
+    import json
+    data = json.loads(request.body)
+    election = ElectionTimeline.objects.order_by('-end_date').first()
+
+    if not election:
+        return JsonResponse({'error': 'No election found'})
+
+    election.start_date = data.get('start_date')
+    election.end_date = data.get('end_date')
+    election.voter_levels = data.get('voter_levels', [])
+    election.voter_departments = data.get('voter_departments', [])
+    election.candidate_levels = data.get('candidate_levels', [])
+    election.candidate_departments = data.get('candidate_departments', [])
+    election.allow_all_voters = data.get('allow_all_voters', False)
+    election.allow_all_candidates = data.get('allow_all_candidates', False)
+    election.show_live_results = data.get('show_live_results', True)
+    election.save()
+
+    return JsonResponse({'success': True})
+'''

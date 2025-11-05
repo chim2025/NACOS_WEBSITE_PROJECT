@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -62,11 +62,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'nacos.urls'
 
-import os
-from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'
-BASE_DIR = Path(__file__).resolve().parent.parent
+
+
 
 TEMPLATES = [
     {
@@ -177,7 +175,10 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'frontend' / 'static']
+STATICFILES_DIRS = [
+    BASE_DIR / 'frontend' / 'static',           # Tailwind source + output
+    BASE_DIR / 'election_officer' / 'static',   # election_officer CSS
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'  
 
 

@@ -98,6 +98,7 @@ from .models import UserMessage
 @login_required
 def dashboard_view(request):
     user = request.user
+    
 
     if hasattr(user, 'electionofficer'):
         return redirect('election_officer:officer_dashboard')
@@ -123,7 +124,8 @@ def dashboard_view(request):
         'is_student': True,
         'approved_candidates': approved_candidates,
         'positions': positions,
-        'user_messages': user_messages,  # PASS TO TEMPLATE
+        'user_messages': user_messages,
+        'user':user # PASS TO TEMPLATE
     }
     context['unread_count'] = unread_count
     return render(request, 'dashboard.html', context)
@@ -382,20 +384,35 @@ def get_positions_api(request):
     return JsonResponse({'positions': list(positions)})
 from .models import ContestApplication
 
+from django.utils import timezone
+
 @login_required
 def check_contest_status(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'applied': False})
+    # GET CURRENT ELECTION
+    election = ElectionTimeline.objects.filter(
+        start_date__lte=timezone.now()
+    ).order_by('-end_date').first()
 
-    try:
-        app = ContestApplication.objects.get(user=request.user)
-        return JsonResponse({
+    # DEFAULT RESPONSE
+    response = {
+        'applied': False,
+        'approved': False,
+        'rejected': False,
+        'user_level': request.user.level,
+        'allowedlevels': ['200', '300', '400'],
+        'election_status': 'ended' if election and election.end_date < timezone.now() else 'live'
+    }
+
+    # CHECK IF USER HAS ANY APPLICATION
+    application = ContestApplication.objects.filter(user=request.user).first()
+    if application:
+        response.update({
             'applied': True,
-            'approved': app.approved,
-            'rejected': app.rejected,
+            'approved': application.approved,
+            'rejected': application.rejected,
         })
-    except ContestApplication.DoesNotExist:
-        return JsonResponse({'applied': False})
+
+    return JsonResponse(response)
 @login_required
 def mark_message_read(request, message_id):
     if request.method == 'POST':
@@ -457,7 +474,9 @@ def get_election_data(request):
     return JsonResponse({
         'election_id': election.id,
         'has_voted': has_voted,
+        'user_level': request.user.level,
         'voted_positions': voted_positions,
+        'allowedlevels':['200', '300', '400'],
         'positions': [
             {'id': p.id, 'name': p.name}
             for p in positions
@@ -492,10 +511,7 @@ def submit_vote(request):
             position=app.position,
             election=election
         )
-        UserMessage.objects.create(
-            user=request.user,
-            message_text='Your votes has been recorded in our database. Thank you for your participation.'
-        )
+       
         saved_count += 1
 
     return JsonResponse({

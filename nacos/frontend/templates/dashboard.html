@@ -1093,6 +1093,24 @@
                 </div>
                 <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Active Member</p>
                 <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">Last updated: {% now "F d, Y" %}</p>
+ <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">
+  {% if user.level == '100' or user.level == '200' or user.level == '300' or user.level == '400' %}
+    Current level: {{ user.level }}
+  {% else %}
+    {% with level_num=user.level|add:0 %}
+      {% if level_num >= 500 %}
+        {% widthratio level_num 100 1 as base_year %}
+        {% with years_ago=base_year|add:"-4" %}
+          Graduated 
+          {% if years_ago == 1 %}last year{% else %}{{ years_ago }} years ago{% endif %}
+        {% endwith %}
+      {% else %}
+        Level: {{ user.level }}
+      {% endif %}
+    {% endwith %}
+  {% endif %}
+</p>
+
             </div>
             
             <div class="card bg-white dark:bg-dark-surface rounded-xl shadow-md p-4">
@@ -1210,7 +1228,17 @@
                         </div>
                         <div class="flex items-center gap-2 text-green-600">
                             <span class="material-symbols-outlined">check_circle</span>
-                            <span class="text-sm font-medium">You are eligible</span>
+                            {% if user.level == '200' or user.level == '300' or user.level == '400' %}
+                            <span class="inline-flex items-center gap-1 text-sm font-medium text-emerald-600">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                You are eligible
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 text-sm font-medium text-red-600">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                                Not eligible
+                            </span>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="text-center md:text-left">
@@ -2392,6 +2420,24 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
+<!-- NOT ELIGIBLE MODAL -->
+<div id="ineligible-vote-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center">
+        <div class="w-20 h-20 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-orange-700 mb-2">Not Eligible to Vote</h3>
+        <p class="text-gray-600 mb-1">Hi <span id="ineligible-user-name" class="font-semibold"></span>,</p>
+        <p class="text-gray-600">Only <strong>200, 300, and 400 level</strong> students are allowed to vote in this election.</p>
+        <button onclick="document.getElementById('ineligible-vote-modal').classList.add('hidden'); document.body.style.overflow='';" 
+                class="mt-6 px-6 py-2.5 bg-orange-600 text-white rounded-full font-medium hover:bg-orange-700 transition">
+            Close
+        </button>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const voteBtn = document.getElementById('vote-button');
@@ -2406,7 +2452,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let positions = [];
     let candidates = [];
     const userName = "{{ request.user.get_full_name|default:request.user.username }}";
-    const userPhotoUrl = "{{ request.user.profile_picture.url|default:'/static/default-avatar.png' }}";
+    const userPhotoUrl = "{% if request.user.profile_picture and request.user.profile_picture.name %}{{ request.user.profile_picture.url }}{% else %}/static/default-avatar.png{% endif %}";
 
     if (!modal || !voteBtn) return;
 
@@ -2423,6 +2469,22 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch("{% url 'nacos_app:get_election_data' %}")
             .then(r => r.json())
             .then(data => {
+                const allowedLevels = data.allowedlevels;
+                const userLevel = data.user_level;
+
+            // BLOCK NON-ELIGIBLE USERS
+            if (!allowedLevels.includes(userLevel)) {
+                // Show "Not Eligible" modal
+                const ineligibleModal = document.getElementById('ineligible-vote-modal');
+                if (ineligibleModal) {
+                    document.getElementById('ineligible-user-name').textContent = userName;
+                    ineligibleModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    alert("You are not eligible to vote. Only 200, 300, and 400 level students can vote.");
+                }
+                return;
+            }
                 if (data.has_voted) {
     // Hide main modal if somehow open
     const mainModal = document.getElementById('election-vote-modal');
@@ -2830,9 +2892,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <div class="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
-        Updated: <span id="result-timestamp">just now</span>
-    </div>
+    
 `;
 
         data.positions.forEach(pos => {

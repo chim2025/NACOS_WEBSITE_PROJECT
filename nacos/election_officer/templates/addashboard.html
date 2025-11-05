@@ -333,6 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <nav class="nav-links">
         <button data-page="home" class="nav-btn active">Home</button>
         <button data-page="election" class="nav-btn">Election</button>
+        <!--<button data-page="settings" class="nav-btn">Settings</button>-->
         <button data-page="notifications" class="nav-btn">
           Notifications <span id="notif-badge" class="badge">0</span>
         </button>
@@ -491,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="level-item">200L<br><strong>{{ stats.level_counts.200 }}</strong></div>
           <div class="level-item">300L<br><strong>{{ stats.level_counts.300 }}</strong></div>
           <div class="level-item">400L<br><strong>{{ stats.level_counts.400 }}</strong></div>
-          <div class="level-item">500L<br><strong>{{ stats.level_counts.500 }}</strong></div>
+          <div class="level-item">Graduated<br><strong>{{ stats.level_counts.500 }}</strong></div>
         </div>
       </div>
 
@@ -587,14 +588,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 
-
-
-
-
-
-
-
-
    <div class="info-card">
     <div class="flex justify-between items-center mb-5">
         
@@ -611,14 +604,29 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
   </section>
 
-  <!-- ---------- NOTIFICATIONS ---------- -->
-  <section id="page-notifications" class="page">
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 opacity-0 pointer-events-none transition-all duration-300">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-5 flex items-center gap-3 border border-gray-200 dark:border-gray-700 max-w-sm">
+    <div id="toast-icon" class="flex-shrink-0"></div>
+    <div class="flex-1 min-w-0">
+      <p id="toast-message" class="font-medium text-gray-900 dark:text-white text-sm"></p>
+      <p id="toast-sub" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+    </div>
+    <button onclick="hideToast()" class="ml-3 text-gray-400 hover:text-gray-600 transition">
+      <span class="material-symbols-outlined text-lg">close</span>
+    </button>
+  </div>
+</div>
+
+<section id="page-notifications" class="page">
     <h2 class="section-title">Notifications</h2>
     <div id="notif-list" class="notif-container"></div>
   </section>
+
 </main>
 
-<!-- ==================== SVG ICONS (inline) ==================== -->
+
+
 <svg style="display:none;">
   <symbol id="icon-calendar" viewBox="0 0 24 24">
     <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -631,8 +639,7 @@ document.addEventListener('DOMContentLoaded', function() {
   </symbol>
 </svg>
 
-<!-- ==================== MODALS ==================== -->
-<!-- TIME MODAL -->
+
 <div id="time-modal" class="modal">
   <div class="modal-dialog">
     <div class="modal-header">
@@ -652,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <small>Must be after start time</small>
       </div>
       <button type="submit" class="btn-primary w-100">Save Timeline</button>
-      <!-- Inside #time-modal, inside the form, before </form> -->
+     
 
     </form>
   </div>
@@ -664,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let CSRF = csrfInput ? csrfInput.value : '';
 
     window.deleteTimeline = function (timelineId, button) {
-      timelineId = parseInt(timelineId, 10);  // Ensure number
+      timelineId = parseInt(timelineId, 10); 
       if (!confirm('Delete this timeline permanently?')) return;
 
       const item = button.closest('.tl-item');
@@ -673,12 +680,11 @@ document.addEventListener('DOMContentLoaded', function() {
       item.style.opacity = '0.5';
       item.style.pointerEvents = 'none';
 
-      // FIXED: Append PK + trailing slash
       let url = window.APP_URLS?.delete_timeline || '';
-      if (url && !url.endsWith('/')) url += '/';  // Ensure trailing slash on base
-      url += timelineId + '/';  // → /officer/timeline/delete/5/
+      if (url && !url.endsWith('/')) url += '/'; 
+      url += timelineId + '/'; 
 
-      console.log('Delete URL:', url);  // DEBUG: Check Network tab
+      
 
       fetch(url, {
         method: 'POST',
@@ -736,13 +742,11 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 </script>
 
-<!-- URL placeholder – must be after APP_URLS is defined -->
-<!-- FIXED: Generate BASE URL properly -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Get the base URL correctly (remove trailing pk)
-    const fullDeleteUrl = "{% url 'election_officer:delete_timeline' 999 %}";  // e.g., /officer/timeline/delete/999/
-    const baseDeleteUrl = fullDeleteUrl.replace(/\/999\/?$/, '');  // → /officer/timeline/delete/
+  
+    const fullDeleteUrl = "{% url 'election_officer:delete_timeline' 999 %}"; 
+    const baseDeleteUrl = fullDeleteUrl.replace(/\/999\/?$/, ''); 
     
     window.APP_URLS = window.APP_URLS || {};
     window.APP_URLS.delete_timeline = baseDeleteUrl; 
@@ -879,7 +883,6 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 <!-- ==================== JS ==================== -->
-
 
 
 

@@ -40,15 +40,54 @@ document.addEventListener('DOMContentLoaded', () => {
  async function checkApplicationStatus() {
   try {
     const res = await fetch(window.APP_URLS.check_contest_status);
+    console.log('url',window.APP_URLS.check_contest_status )
     const data = await res.json();
-
+    
     hasApplied = data.applied || false;
     console.log('data',data)
-
+    const allowedlevels = data.allowedlevels;
+    const election_status=data.election_status
+    console.log("allowed_hosts", allowedlevels)
+    console.log('election_status', election_status)
     if (!hasApplied) {
-      // Not applied → show normal modal
-      return;
-    }
+  
+  if (election_status === 'live') {
+    document.getElementById('already-submitted').innerHTML = `
+      <div class="text-center py-8">
+        <div class="w-20 h-20 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-red-700 mb-2">Election in Progress</h3>
+        <p class="text-gray-600">You can't apply for a position when the election is still on.</p>
+      </div>
+    `;
+    showAlreadySubmitted();
+    return;
+  }
+
+  // THEN CHECK LEVEL
+  if (!allowedlevels.includes(data.user_level)) {
+    document.getElementById('already-submitted').innerHTML = `
+      <div class="text-center py-8">
+        <div class="w-20 h-20 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
+          <svg class="w-12 h-12 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-orange-700 mb-2">Not Eligible to Contest</h3>
+        <p class="text-gray-600">Only 200, 300, and 400 level students are allowed to contest for positions.</p>
+      </div>
+    `;
+    showAlreadySubmitted();
+    return;
+  }
+
+  // ALL GOOD → LOAD POSITIONS
+  loadPositions();
+  return;
+}
 
     if (data.approved) {
       // APPROVED → Show FINAL MESSAGE

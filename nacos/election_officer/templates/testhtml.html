@@ -1,0 +1,106 @@
+<!---
+<section id="page-settings" class="page hidden">
+    <div class="max-w-4xl mx-auto p-6">
+      <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-6">Election Settings</h2>
+
+      <div id="settings-loading" class="text-center py-12">
+        <div class="inline-flex items-center gap-3">
+          <div class="animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent"></div>
+          <span class="text-gray-600">Loading settings...</span>
+        </div>
+      </div>
+
+     
+      <form id="election-settings-form" class="space-y-6 hidden" 
+            data-options-url="{% url 'election_officer:get_election_options' %}"
+            data-settings-url="{% url 'election_officer:get_current_settings' %}"
+            data-save-url="{% url 'election_officer:save_election_settings' %}">
+          {% csrf_token %}
+       
+<div class="card p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border">
+  <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
+    <span class="material-symbols-outlined text-emerald-600">schedule</span>
+    Election Timeline
+  </h3>
+  <div class="grid md:grid-cols-2 gap-4">
+  <div>
+    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Voting Starts</label>
+    <input type="datetime-local" id="start_date_input" name="start_date" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+    <p id="start_date_display" class="text-sm text-emerald-600 mt-1 font-medium"></p>
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Voting Ends</label>
+    <input type="datetime-local" id="end_date_input" name="end_date" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+    <p id="end_date_display" class="text-sm text-emerald-600 mt-1 font-medium"></p>
+  </div>
+</div>
+</div>
+
+       
+        <div class="card p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border">
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
+            <span class="material-symbols-outlined text-emerald-600">how_to_vote</span>
+            Voter Eligibility
+          </h3>
+          <label class="flex items-center gap-3 mb-4">
+            <input type="checkbox" id="allow-all-voters" name="allow_all_voters" class="w-5 h-5 text-emerald-600 rounded">
+            <span class="text-gray-700 dark:text-gray-300">Allow all users to vote</span>
+          </label>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Allowed Levels</label>
+              <select multiple id="voter-levels" name="voter_levels" class="h-32 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"></select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Allowed Departments</label>
+              <select multiple id="voter-depts" name="voter_departments" class="h-32 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"></select>
+            </div>
+          </div>
+        </div>
+
+      
+        <div class="card p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border">
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
+            <span class="material-symbols-outlined text-emerald-600">person_search</span>
+            Candidate Eligibility
+          </h3>
+          <label class="flex items-center gap-3 mb-4">
+            <input type="checkbox" id="allow-all-candidates" name="allow_all_candidates" class="w-5 h-5 text-emerald-600 rounded">
+            <span class="text-gray-700 dark:text-gray-300">Allow all users to contest</span>
+          </label>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Allowed Levels</label>
+              <select multiple id="candidate-levels" name="candidate_levels" class="h-32 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"></select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Allowed Departments</label>
+              <select multiple id="candidate-depts" name="candidate_departments" class="h-32 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"></select>
+            </div>
+          </div>
+        </div>
+
+     
+        <div class="card p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border">
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
+            <span class="material-symbols-outlined text-emerald-600">rule</span>
+            Voting Rules
+          </h3>
+          <label class="flex items-center gap-3">
+            <input type="checkbox" name="show_live_results" checked class="w-5 h-5 text-emerald-600 rounded">
+            <span class="text-gray-700 dark:text-gray-300">Show live results to public</span>
+          </label>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" onclick="reloadSettings()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Reload</button>
+          <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+            <span class="material-symbols-outlined">save</span> Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+  -->
+
+  
