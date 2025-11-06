@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ------------------------------------------------------------------
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-wtl&&=dxx9xj4v*_afusaek525ex^ul&g1ipu#x5f%t=147rdj')
-DEBUG = False  # MUST be False on Render
+DEBUG = False  
 ALLOWED_HOSTS = ['*']  # Render sets this
 
 # ------------------------------------------------------------------
@@ -42,6 +42,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'nacos_app.middlewaresecurity.RequirePasswordSetMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'nacos_app.middleware.VoteValidationMiddleware',
@@ -114,6 +115,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ------------------------------------------------------------------
 # SECURITY HEADERS
@@ -179,4 +181,3 @@ LOGGING = {
 # ------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 WHITENOISE_AUTOREFRESH = False  # Production
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

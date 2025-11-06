@@ -19,6 +19,7 @@ from django.shortcuts import get_object_or_404
 from election_officer.models import ElectionOfficer
 from django.utils import timezone
 from django.db.models import Count
+from django.contrib.auth import update_session_auth_hash  # ADD THIS
 import json
 
 logger = logging.getLogger(__name__)
@@ -34,23 +35,25 @@ def login_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-        
         if user is not None:
             login(request, user)
-            if user.is_migrated and not user.has_usable_password():
-                messages.success(request, 'Please set a new password.')
+            request.session['auth_backend'] = user.backend  # ← ADD THIS
+
+            if getattr(user, 'is_migrated', False) and not user.has_usable_password():
                 return JsonResponse({
                     'success': True,
                     'redirect_url': '/set-password/',
                     'message': 'Please set a new password.'
                 })
-            messages.success(request, 'Login successful.')
+
             return JsonResponse({
                 'success': True,
                 'redirect_url': '/dashboard/',
                 'message': 'Login successful.',
-                'show_profile_upload': not user.profile_picture
+                'show_profile_upload': not bool(user.profile_picture)
             })
+            
+           
         messages.error(request, 'Invalid NACOS ID, email, or matric number, or incorrect password.')
         return JsonResponse({
             'success': False,
@@ -60,35 +63,42 @@ def login_view(request):
     return render(request, 'code.html', {'messages': messages.get_messages(request)})
 
 @csrf_protect
+@csrf_protect
 def set_password_view(request):
     if not request.user.is_authenticated:
         messages.error(request, 'Please log in to set your password.')
         return redirect('nacos_app:login')
-    
+
     if request.method == 'POST':
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
-        
+
         if password and confirm_password and password == confirm_password:
             user = request.user
             user.set_password(password)
             user.is_migrated = False
             user.save()
-            logout(request)
-            request.session.flush()
-            messages.success(request, 'Password set successfully. Please log in.')
+
+            # RE-LOGIN WITH CORRECT BACKEND
+            backend = request.session.get('auth_backend', 'nacos_app.auth_backend.CustomUserBackend')
+            login(request, user, backend=backend)
+            update_session_auth_hash(request, user)
+            request.session.pop('auth_backend', None)
+
             return JsonResponse({
                 'success': True,
-                'redirect_url': '/login/',
-                'message': 'Password set successfully.'
+                'redirect_url': '/dashboard/',
+                'message': 'Password set successfully!'
             })
-        messages.error(request, 'Passwords do not match or are invalid.')
+
         return JsonResponse({
             'success': False,
-            'message': 'Passwords do not match or are invalid.'
+            'message': 'Passwords do not match.'
         }, status=400)
-    
-    return render(request, 'set_password.html', {'messages': messages.get_messages(request)})
+
+    return render(request, 'set_password.html')
+
+
 
 CustomUser = get_user_model()
 
@@ -166,7 +176,12 @@ def upload_profile_picture(request):
             }, status=400)
 
         user = request.user
-        filename = f'{user.username}_profile.png'
+        safe_username = user.username.replace('/', '_')
+
+        filename = f'{safe_username}_profile.png' 
+
+        # Save in FLAT folder
+        user.profile_picture.save(filename, ContentFile(image_data), save=True)
         user.profile_picture.save(filename, ContentFile(image_data))
         user.save()
 
@@ -388,22 +403,27 @@ from django.utils import timezone
 
 @login_required
 def check_contest_status(request):
-    # GET CURRENT ELECTION
+    # GET ACTIVE ELECTION
     election = ElectionTimeline.objects.filter(
-        start_date__lte=timezone.now()
-    ).order_by('-end_date').first()
+        start_date__lte=timezone.now(),
+        end_date__gte=timezone.now()
+    ).first()
 
-    # DEFAULT RESPONSE
+    # DEFAULT: NO ELECTION = ENDED
     response = {
         'applied': False,
         'approved': False,
         'rejected': False,
         'user_level': request.user.level,
         'allowedlevels': ['200', '300', '400'],
-        'election_status': 'ended' if election and election.end_date < timezone.now() else 'live'
+        'election_status': 'ended'  # ← DEFAULT
     }
 
-    # CHECK IF USER HAS ANY APPLICATION
+   
+    if election:
+        response['election_status'] = 'ended' if election and election.end_date < timezone.now() else 'live'
+    
+
     application = ContestApplication.objects.filter(user=request.user).first()
     if application:
         response.update({
@@ -413,6 +433,8 @@ def check_contest_status(request):
         })
 
     return JsonResponse(response)
+
+   
 @login_required
 def mark_message_read(request, message_id):
     if request.method == 'POST':
@@ -526,12 +548,14 @@ from django.utils import timezone
 @login_required
 def get_live_results(request):
     # Get the most recent election (active OR ended)
+    
     election = ElectionTimeline.objects.filter(
-        start_date__lte=timezone.now()
-    ).order_by('-end_date').first()
+        start_date__lte=timezone.now(),
+        end_date__gte=timezone.now()
+    ).first()
 
     if not election:
-        return JsonResponse({'positions': []})
+        return JsonResponse({'positions': [], 'election_status': 'ended'})
 
     positions = ElectionPosition.objects.all()
     results = []
