@@ -9,6 +9,3 @@ dj-database-url
 Pillow
 django-cloudinary-storage
 cloudinary
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib

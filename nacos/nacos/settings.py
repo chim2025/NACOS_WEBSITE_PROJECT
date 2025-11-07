@@ -200,7 +200,5 @@ cloudinary.config(
     api_secret=config('CLOUDINARY_API_SECRET')
 )
 
-GOOGLE_DRIVE_FOLDER_ID = '1bhnh8giPYqrFguPabeX1dIUHSdXoIWiP'
-GOOGLE_DRIVE_TOKEN_FILE = os.path.join(BASE_DIR, 'token.json')
-GOOGLE_DRIVE_CLIENT_CONFIG = os.path.join(BASE_DIR, 'client_secret.json')
+
 
