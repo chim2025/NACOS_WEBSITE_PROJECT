@@ -21,8 +21,17 @@ from django.utils import timezone
 from django.db.models import Count
 from django.contrib.auth import update_session_auth_hash  # ADD THIS
 import json
+from cloudinary.uploader import upload
+import re
+import os
+import uuid
+
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+
 
 @csrf_protect
 def login_view(request):
@@ -43,7 +52,8 @@ def login_view(request):
                 return JsonResponse({
                     'success': True,
                     'redirect_url': '/set-password/',
-                    'message': 'Please set a new password.'
+                    'message': f'{request.user.first_name},please set a new password.',
+                    'name':request.user.surname
                 })
 
             return JsonResponse({
@@ -175,20 +185,23 @@ def upload_profile_picture(request):
                 'message': 'Invalid base64 encoding.'
             }, status=400)
 
-        user = request.user
-        safe_username = user.username.replace('/', '_')
-
-        filename = f'{safe_username}_profile.png' 
+        safe_username = request.user.username.replace('/', '_')
+        result = upload(
+            image_data,
+            folder='profile_pics',
+            public_id=f'{safe_username}_profile',
+            format='png',
+            overwrite=True
+        )
 
         # Save in FLAT folder
-        user.profile_picture.save(filename, ContentFile(image_data), save=True)
-        user.profile_picture.save(filename, ContentFile(image_data))
-        user.save()
+        request.user.profile_picture = result['secure_url']
+        request.user.save()
 
         return JsonResponse({
             'success': True,
             'message': 'Profile picture uploaded successfully.',
-            'image_url': user.profile_picture.url if user.profile_picture else None
+            'image_url': result['secure_url']
         })
 
     except Exception as e:
@@ -289,7 +302,7 @@ def check_session(request):
             'mother_name': request.user.mother_name,
             'room': request.user.room,
             'course': request.user.course,
-            'profile_picture': request.user.profile_picture.url if request.user.profile_picture else None
+            'profile_picture': str(request.user.profile_picture) if request.user.profile_picture else None
         } if request.user.is_authenticated else None
     })
 
@@ -319,12 +332,30 @@ def admin_login_view(request):
     
     return render(request, 'adminlogin.html', {'messages': messages.get_messages(request)})
 
+
+import re
+import os
+import uuid
+
+import re
+import os
+from cloudinary.uploader import upload
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import ContestApplication, ElectionPosition, UserMessage
+import logging
+
+logger = logging.getLogger(__name__)
+
 @login_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def submit_contest_application(request):
     try:
-        # === GET DATA FROM FormData ===
+        # === GET DATA ===
         position_name = request.POST.get('position')
         manifesto = request.POST.get('manifesto')
         statement_of_result = request.FILES.get('statement_of_result')
@@ -332,64 +363,68 @@ def submit_contest_application(request):
 
         # === VALIDATE ===
         if not all([position_name, manifesto, statement_of_result, account_statement]):
-            return JsonResponse({
-                'success': False,
-                'message': 'All fields are required: position, manifesto, and both PDFs.'
-            }, status=400)
-
+            return JsonResponse({'success': False, 'message': 'All fields required'}, status=400)
         if len(manifesto) > 200:
-            return JsonResponse({
-                'success': False,
-                'message': 'Manifesto must be 200 characters or less.'
-            }, status=400)
+            return JsonResponse({'success': False, 'message': 'Manifesto too long'}, status=400)
 
-        # === GET POSITION FROM DB ===
-        try:
-            position = ElectionPosition.objects.get(name=position_name)
-        except ElectionPosition.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Invalid position selected.'
-            }, status=400)
-
-        # === CHECK DUPLICATE APPLICATION ===
+        position = get_object_or_404(ElectionPosition, name=position_name)
         if ContestApplication.objects.filter(user=request.user, position=position).exists():
-            return JsonResponse({
-                'success': False,
-                'message': 'You have already applied for this position.'
-            }, status=400)
+            return JsonResponse({'success': False, 'message': 'Already applied'}, status=400)
+
+        # === HELPER: UPLOAD PDF TO CLOUDINARY ===
+        def upload_pdf(file, folder):
+            # Clean filename
+            name_part, ext = os.path.splitext(file.name)
+            clean_name = re.sub(r'[<>:"/\\|?*\s]+', '_', name_part).strip('_')
+            clean_name = clean_name or "document"
+            
+            # Unique ID
+            unique_id = str(uuid.uuid4()).replace('-', '')[:8]
+            
+            # Upload as 'image' type (renders PDFs inline)
+            result = upload(
+                file.read(),
+                folder=folder,
+                resource_type='image',  # ← CRITICAL: 'image' for inline rendering
+                use_filename=False,
+                unique_filename=False,
+                overwrite=True,
+                format='pdf',
+                public_id=f"{clean_name}_{unique_id}"
+            )
+            return result['secure_url']
+
+        # Upload both
+        result_url = upload_pdf(statement_of_result, 'contest_results')
+        account_url = upload_pdf(account_statement, 'contest_accounts')
 
         # === SAVE APPLICATION ===
         application = ContestApplication(
             user=request.user,
             position=position,
             manifesto=manifesto,
-            statement_of_result=statement_of_result,
-            account_statement=account_statement,
+            statement_of_result=result_url,
+            account_statement=account_url
         )
         application.save()
 
-        # === CREATE USER MESSAGE ===
+        # === NOTIFY USER ===
         UserMessage.objects.create(
             user=request.user,
-            message_text='Your contest application has been submitted and is awaiting admin approval.'
+            message_text='Your contest application has been submitted and is awaiting officer approval.'
         )
 
-        # === SUCCESS RESPONSE ===
         return JsonResponse({
             'success': True,
             'message': 'Application submitted successfully!',
-            'application_id': application.id
+            'application_id': application.id,
+            'result_url': result_url,
+            'account_url': account_url
         })
 
     except Exception as e:
-        logger.error(f"Contest submission error for user {request.user}: {str(e)}", exc_info=True)
-        return JsonResponse({
-            'success': False,
-            'message': 'Server error. Please try again later.'
-        }, status=500)
-
-
+        logger.error(f"Contest submission error: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'message': 'Server error. Please try again.'}, status=500)
 
 from .models import ElectionPosition  # <-- Import from nacos_app
 
@@ -484,7 +519,12 @@ def get_election_data(request):
     ).first()
 
     if not election:
-        return JsonResponse({'error': 'No active election'}, status=400)
+        return JsonResponse({
+            'error': 'No active election',
+            'user_level': request.user.level,
+            'allowedlevels':['200', '300', '400'],
+
+            }, status=400)
 
     user_votes = Vote.objects.filter(user=request.user, election=election)
     has_voted = user_votes.exists()
@@ -509,7 +549,7 @@ def get_election_data(request):
                 'name': f"{app.user.surname} {app.user.first_name}".strip() or app.user.username,
                 'nacos_id': app.user.matric or app.user.membership_id,
                 'position_id': app.position_id,
-                'photo': app.user.profile_picture.url if app.user.profile_picture else None
+                'photo': str(app.user.profile_picture) if app.user.profile_picture else None
             }
             for app in applications
         ]
@@ -572,7 +612,7 @@ def get_live_results(request):
                 candidates.append({
                     'id': app.id,
                     'name': f"{app.user.surname} {app.user.first_name}".strip() or app.user.username,
-                    'photo': app.user.profile_picture.url if app.user.profile_picture else None,
+                    'photo': str(app.user.profile_picture) if app.user.profile_picture else None,
                     'votes': vc['votes']
                 })
             except ContestApplication.DoesNotExist:

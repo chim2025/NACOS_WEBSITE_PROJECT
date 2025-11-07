@@ -248,40 +248,88 @@ document.addEventListener('DOMContentLoaded', () => {
     pdfFrame.src = url;
   }
 
-  // === SUBMIT ===
-  submitContest?.addEventListener('click', () => {
-    if (submitContest.dataset.disabled !== 'true' && hasUploaded && selectedPosition) {
-      const csrftoken = getCsrfToken();
-      if (!csrftoken) return;
+// === ADD TO YOUR JS (inside submitContest event) ===
+submitContest?.addEventListener('click', async () => {
+  if (submitContest.dataset.disabled === 'true' || !hasUploaded || !selectedPosition) return;
 
-      const formData = new FormData();
-      formData.append('position', selectedPosition.dataset.name);
-      formData.append('manifesto', manifestoInput.value);
-      formData.append('statement_of_result', resultPdf.files[0]);
-      formData.append('account_statement', accountPdf.files[0]);
+  // === CREATE OVERLAY & SPINNER IF NOT EXIST ===
+  let overlay = document.getElementById('modal-overlay');
+  let spinner = document.getElementById('upload-spinner');
 
-      fetch(window.APP_URLS.submit_contest_application, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': csrftoken },
-        body: formData
-      })
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(d => {
-        if (d.success) {
-          hasApplied = true;
-          showAlreadySubmitted();
-          // No alert()
-        } else {
-          alert('Error: ' + (d.message || 'Unknown error'));
-        }
-      })
-      .catch(err => {
-        console.error('Submit error:', err);
-        alert('Network error. Please try again.');
-      });
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'modal-overlay';
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-60 z-40 backdrop-blur-sm';
+    document.body.appendChild(overlay);
+  }
+
+  if (!spinner) {
+    spinner = document.createElement('div');
+    spinner.id = 'upload-spinner';
+    spinner.className = 'fixed inset-0 flex items-center justify-center z-50 pointer-events-none';
+    spinner.innerHTML = `
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
+    `;
+    document.body.appendChild(spinner);
+  }
+
+  // === DISABLE ALL BUTTONS ===
+  const allButtons = [submitContest, exitBtn, closeContestModal, nextBtn, backBtn];
+  allButtons.forEach(btn => {
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
     }
   });
 
+  // === SHOW FEEDBACK ===
+  overlay.classList.remove('hidden');
+  spinner.classList.remove('hidden');
+  contestModal.style.pointerEvents = 'none';
+
+  try {
+    const csrftoken = getCsrfToken();
+    if (!csrftoken) throw new Error('CSRF missing');
+
+    const formData = new FormData();
+    formData.append('position', selectedPosition.dataset.name);
+    formData.append('manifesto', manifestoInput.value);
+    formData.append('statement_of_result', resultPdf.files[0]);
+    formData.append('account_statement', accountPdf.files[0]);
+
+    const response = await fetch(window.APP_URLS.submit_contest_application, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      hasApplied = true;
+      showAlreadySubmitted();
+    } else {
+      alert('Error: ' + (data.message || 'Submission failed'));
+    }
+  } catch (err) {
+    console.error('Submit error:', err);
+    alert('Network error. Please try again.');
+  } finally {
+    // === RE-ENABLE AFTER 1.5s ===
+    setTimeout(() => {
+      overlay.classList.add('hidden');
+      spinner.classList.add('hidden');
+      allButtons.forEach(btn => {
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      });
+      contestModal.style.pointerEvents = 'auto';
+    }, 1500);
+  }
+  resetForm();
+});
   // === CHARACTER COUNT ===
   manifestoInput?.addEventListener('input', () => {
     const count = manifestoInput.value.length;
@@ -289,15 +337,40 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleNextButton();
   });
 
-  // === TOGGLE BUTTONS ===
-  function toggleNextButton() {
-    const valid = selectedPosition && manifestoInput.value.trim().length > 0 && manifestoInput.value.length <= 200;
-    nextBtn.dataset.disabled = valid ? 'false' : 'true';
+
+function toggleNextButton() {
+  const valid = selectedPosition && 
+                manifestoInput.value.trim().length > 0 && 
+                manifestoInput.value.length <= 200;
+
+  nextBtn.disabled = !valid;
+  nextBtn.dataset.disabled = valid ? 'false' : 'true';
+
+  if (valid) {
+    nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    nextBtn.classList.add('hover:bg-emerald-600', 'cursor-pointer');
+  } else {
+    nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    nextBtn.classList.remove('hover:bg-emerald-600', 'cursor-pointer');
   }
-  function toggleSubmitButton() {
-    const valid = resultPdf.files[0] && accountPdf.files[0];
-    submitContest.dataset.disabled = valid ? 'false' : 'true';
+}
+
+// === TOGGLE SUBMIT BUTTON ===
+function toggleSubmitButton() {
+  const valid = resultPdf.files[0] && accountPdf.files[0];
+
+  submitContest.disabled = !valid;
+  submitContest.dataset.disabled = valid ? 'false' : 'true';
+
+  if (valid) {
+    submitContest.classList.remove('opacity-50', 'cursor-not-allowed');
+    submitContest.classList.add('hover:bg-emerald-600', 'cursor-pointer');
+  } else {
+    submitContest.classList.add('opacity-50', 'cursor-not-allowed');
+    submitContest.classList.remove('hover:bg-emerald-600', 'cursor-pointer');
   }
+}
+
 
   // === RESET FORM ===
   function resetForm() {

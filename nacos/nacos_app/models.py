@@ -30,6 +30,7 @@ class CustomUser(AbstractUser):
     timestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)  # Changed to DateTimeField
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True, default=None)
 
+
     # Override groups and user_permissions to avoid reverse accessor conflicts
     groups = models.ManyToManyField(
         'auth.Group',
@@ -49,39 +50,7 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
-class ContestApplication(models.Model):
-    POSITION_CHOICES = [
-        ('president', 'President'),
-        ('vice_president', 'Vice President'),
-        ('secretary', 'Secretary'),
-        ('treasurer', 'Treasurer'),
-        ('director1', 'Assistant Secretary'),
-        ('director2', 'Assistant Treasurer'),
-        ('director3', 'Director of Research and Innovation'),
-        ('director4', 'Director of Sports'),
-        ('director5', 'Director of Socials'),
-        ('director6', 'Director of Chaplaincy'),
-        ('director7', 'Director of Welfare'),
-        ('director8', 'Director of Public Relations'),
-        ('director9', 'Director of ICT'),
-    ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='contest_applications')
-    position = models.CharField(max_length=50, choices=POSITION_CHOICES)
-    manifesto = models.TextField(max_length=500, blank=True, null=True)
-    statement_of_result = models.FileField(upload_to='contest_results/', blank=True, null=True)
-    account_statement = models.FileField(upload_to='contest_accounts/', blank=True, null=True)
-    submitted_at = models.DateTimeField(default=timezone.now)
-    approved = models.BooleanField(default=False)
-    rejected = models.BooleanField(default=False)
-    rejection_reason = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.position}"
-
-# nacos_app/models.py
-from django.contrib.auth import get_user_model
-from election_officer.models import ElectionOfficer  # ← Import
 
 class ElectionTimeline(models.Model):
     start_date = models.DateTimeField()
@@ -121,8 +90,8 @@ class ContestApplication(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     position = models.ForeignKey(ElectionPosition, on_delete=models.CASCADE)
     manifesto = models.TextField(max_length=200)
-    statement_of_result = models.FileField(upload_to='contest/results/')
-    account_statement = models.FileField(upload_to='contest/accounts/')
+    statement_of_result = models.URLField(blank=True, null=True)
+    account_statement = models.URLField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     approved = models.BooleanField(default=False)
     rejected = models.BooleanField(default=False)

@@ -82,8 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Login form not found");
     }
 
-    // Set-password form submission
+  
     const setPasswordForm = document.querySelector('.set-password-form');
+   
     if (setPasswordForm) {
         console.log("Set-password form found");
         setPasswordForm.addEventListener('submit', function(event) {

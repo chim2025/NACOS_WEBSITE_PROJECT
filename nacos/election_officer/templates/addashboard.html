@@ -828,9 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- SCROLLABLE BODY -->
     <div class="modal-body" style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
       <!-- DEBUG: Remove after testing -->
-      <p style="background:yellow; padding:5px;">
-        Delete URL: <code>{{ request.build_absolute_uri|slice:":-1" }}{% url 'election_officer:delete_timeline' 999 %}</code>
-      </p>
+      
       {% if timelines %}
         <div class="tl-list">
           {% for t in timelines %}

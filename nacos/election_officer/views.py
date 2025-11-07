@@ -10,7 +10,9 @@ from nacos_app.models import ContestApplication, ElectionTimeline, UserMessage, 
 from election_officer.models import ElectionOfficer
 from nacos_app.models import CustomUser, ContestApplication, ElectionTimeline
 from django.views.decorators.http import require_http_methods
+from django.conf import settings
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -357,7 +359,7 @@ def election_live(request):
             candidates.append({
                 'name': f"{app.user.surname} {app.user.first_name}".strip() or app.user.username,
                 'votes': votes,
-                'photo': app.user.profile_picture.url if app.user.profile_picture else None,
+                'photo': str(app.user.profile_picture) if app.user.profile_picture else None,
                 'votes': votes,
                 'matric': app.user.matric or app.user.membership_id or '—',
                 'batch': app.user.level or ''  
@@ -381,19 +383,16 @@ def get_applications_api(request):
     apps = ContestApplication.objects.select_related('user', 'position').all()
     data = []
     for app in apps:
-        profile_pic = app.user.profile_picture.url if app.user.profile_picture else None
-        if profile_pic:
-            profile_pic = request.build_absolute_uri(profile_pic)
 
         data.append({
             'id': app.id,
-            'student': app.user.get_full_name() or app.user.username,
+            'student': f"{app.user.surname} {app.user.first_name or ''}",
             'user_email': app.user.email,
             'position': app.position.name,
             'submitted_at': app.submitted_at.strftime("%b %d, %I:%M %p"),
-            'result_file': request.build_absolute_uri(app.statement_of_result.url) if app.statement_of_result else '',
-            'account_file': request.build_absolute_uri(app.account_statement.url) if app.account_statement else '',
-            'profile_pic': profile_pic,
+            'result_file': app.statement_of_result if app.statement_of_result else '',
+            'account_file':app.account_statement if app.account_statement else '',
+            'profile_pic': str(app.user.profile_picture) if app.user.profile_picture else None,
             'approved': app.approved,
             'rejected': app.rejected,
         })
@@ -461,35 +460,30 @@ def delete_timeline(request, pk):
     except Exception as e:
         logger.error(f"Delete error: {e}")
         return JsonResponse({'success': False, 'message': 'Server error'}, status=500)
-from django.conf import settings
 
+
+# election_officer/views.py
 @login_required
 def get_students_api(request):
-    students = CustomUser.objects.filter(
-        is_migrated=True  # adjust if needed
-    ).select_related().values(
+    students = CustomUser.objects.filter(is_migrated=True).only(
         'id', 'first_name', 'surname', 'matric', 'course', 'level', 'is_active', 'profile_picture'
     )
-
+    
     data = []
     for s in students:
-        full_name = f"{s['first_name'] or ''} {s['surname'] or ''}".strip() or s['matric'] or 'Unknown'
-        photo_url = None
-        if s['profile_picture']:
-            photo_url = request.build_absolute_uri(s['profile_picture'].url)
-        
+        full_name = f"{s.first_name or ''} {s.surname or ''}".strip() or s.matric or 'Unknown'
+        photo_url = s.profile_picture.url if s.profile_picture else None  # .url WORKS HERE
+
         data.append({
-            'id': s['id'],
+            'id': s.id,
             'name': full_name,
-            'matric': s['matric'] or 'N/A',
-            'dept': s['course'] or 'N/A',
-            'level': s['level'] or 'N/A',
-            'status': 'Active' if s['is_active'] else 'Inactive',
-            'photo': photo_url
+            'matric': s.matric or 'N/A',
+            'dept': s.course or 'N/A',
+            'level': s.level or 'N/A',
+            'status': 'Active' if s.is_active else 'Inactive',
+            'photo': photo_url  # FULL CLOUDINARY URL
         })
-
     return JsonResponse({'students': data})
-
 '''
 @login_required
 def get_election_options(request):

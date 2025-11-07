@@ -4,6 +4,9 @@ Django settings for nacos project – Render-ready.
 import os
 from pathlib import Path
 import dj_database_url
+from decouple import config 
+
+
 
 # ------------------------------------------------------------------
 # PATHS
@@ -30,6 +33,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'nacos_app.apps.NacosAppConfig',
     'election_officer',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 # ------------------------------------------------------------------
@@ -106,6 +111,12 @@ USE_TZ = True
 # ------------------------------------------------------------------
 # STATIC & MEDIA
 # ------------------------------------------------------------------
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY':    config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'frontend' / 'static',
@@ -180,4 +191,16 @@ LOGGING = {
 # DEFAULTS
 # ------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-WHITENOISE_AUTOREFRESH = False  # Production
+WHITENOISE_AUTOREFRESH = False  
+
+import cloudinary
+cloudinary.config(
+    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
+    api_key=config('CLOUDINARY_API_KEY'),
+    api_secret=config('CLOUDINARY_API_SECRET')
+)
+
+GOOGLE_DRIVE_FOLDER_ID = '1bhnh8giPYqrFguPabeX1dIUHSdXoIWiP'
+GOOGLE_DRIVE_TOKEN_FILE = os.path.join(BASE_DIR, 'token.json')
+GOOGLE_DRIVE_CLIENT_CONFIG = os.path.join(BASE_DIR, 'client_secret.json')
+
