@@ -9,3 +9,4 @@ dj-database-url
 Pillow
 django-cloudinary-storage
 cloudinary
+python-decouple==3.8
